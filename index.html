@@ -3,463 +3,746 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beyblade X - Strategia Torneo</title>
+    <title>BeyLab X - Archivio e Strategia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f5f5f4; color: #1c1917; } /* warm-gray-100, warm-gray-900 */
-        .chart-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; height: 300px; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); }
-        .bey-slot { border-left: 4px solid #e5e7eb; padding-left: 1rem; }
-        .bey-slot.attack { border-left-color: #ef4444; } /* Red */
-        .bey-slot.stamina { border-left-color: #fbbf24; } /* Amber */
-        .bey-slot.defense { border-left-color: #10b981; } /* Emerald */
-        .bey-slot.balance { border-left-color: #3b82f6; } /* Blue */
-        
-        /* Custom scrollbar for inventory list */
-        .inventory-scroll::-webkit-scrollbar { width: 6px; }
-        .inventory-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
-        .inventory-scroll::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
-        .inventory-scroll::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .stat-bar-fill {
+            transition: width 1s ease-in-out;
+        }
     </style>
-    <!-- Chosen Palette: Warm Neutrals (Stone/Warm Gray) with functional role colors (Red/Blue/Green/Amber) -->
-    <!-- Application Structure Plan:
-         1. Header: Title & Context.
-         2. Layout: Two-column grid (Desktop) / Stacked (Mobile).
-            - Left/Top: Deck Builder & Active Combinations. The "Action" center.
-            - Right/Bottom: Inventory & Data Visualization. The "Knowledge" base.
-         3. Interactions: 
-            - "Generate Deck" buttons for different strategies (Meta, Aggro, Defense).
-            - Dynamic text explaining WHY the deck was chosen based on part synergy.
-            - Radar chart updates to show the stat profile of the selected trio.
-         4. Rationale: Users need to see the "Result" (The Deck) first, but have the "Proof" (Inventory/Stats) available for context.
+    <!-- Chosen Palette: Tech Lab Clean - White/Gray backgrounds with Slate text and vivid accents (Blue/Green/Red) for data visualization. -->
+    <!-- Application Structure Plan: 
+         1. Header: Simple branding.
+         2. Inventory Module: Input field for 'Stock Combos' (simulating recognition) which breaks down into Parts. Visual list of owned parts.
+         3. Builder Module: Three dropdowns (Blade, Ratchet, Bit) dependent on Inventory. Live stat preview.
+         4. Analysis Module: Radar Chart (Chart.js) + Algorithmic Text Evaluation.
+         5. Tournament Deck: 3 Slots to 'Save' completed builds.
+         Why this structure? It mirrors the physical workflow: Buy -> Sort -> Build -> Test -> Compete.
     -->
     <!-- Visualization & Content Choices:
-         - Inventory Summary: Donut Chart -> Shows distribution of parts (Attack/Def/Sta) in collection.
-         - Deck Balance: Radar Chart -> Compares the 3 selected Beyblades' aggregate stats.
-         - Deck List: Interactive Cards -> Clear textual representation of the 3 components with role descriptions.
-         - Logic: JS-based combinatorial logic to ensure UNIQUENESS rule (no shared parts) while maximizing synergy.
+         - Radar Chart: Perfect for RPG-style stats (Attack/Defense/Stamina/Dash/Burst). Goal: Inform & Compare.
+         - Progress Bars: For individual part stats. Goal: Compare.
+         - Dynamic Text: For the 'Motivation/Evaluation'. Goal: Inform.
+         - Interactive Lists: For the Inventory. Goal: Organize.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-slate-50 text-slate-800 font-sans selection:bg-blue-200">
 
-    <div class="max-w-7xl mx-auto space-y-8">
-        
-        <!-- Header -->
-        <header class="text-center space-y-2 mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-stone-800">Beyblade X Strategist</h1>
-            <p class="text-stone-600 max-w-2xl mx-auto">
-                Analisi dell'inventario e generatore di combinazioni per tornei 3on3.
-                <br><span class="text-sm text-stone-500">Regola 3on3: Nessuna parte ripetuta (Blade, Ratchet, Bit unici).</span>
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">X</div>
+                    <span class="font-bold text-xl tracking-tight text-slate-900">BeyLab <span class="text-blue-600">Architect</span></span>
+                </div>
+                <div class="flex space-x-8 items-center hidden md:flex">
+                    <a href="#inventory" class="text-slate-500 hover:text-blue-600 font-medium transition-colors">Archivio</a>
+                    <a href="#builder" class="text-slate-500 hover:text-blue-600 font-medium transition-colors">Officina & Analisi</a>
+                    <a href="#deck" class="text-slate-500 hover:text-blue-600 font-medium transition-colors">Deck Torneo</a>
+                </div>
+                <!-- Mobile menu button placeholder (simplified) -->
+                <div class="flex items-center md:hidden">
+                    <button class="text-slate-500 hover:text-blue-600 font-bold">Menu</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="text-center space-y-4">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
+                Costruisci. Analizza. <span class="text-blue-600">Vinci.</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-lg text-slate-600">
+                Benvenuto nel tuo laboratorio digitale. Inserisci i Beyblade che acquisti per popolare l'archivio parti, assembla combo ottimizzate e crea il tuo Deck da torneo perfetto con valutazioni in tempo reale.
             </p>
-        </header>
+        </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- Left Column: Deck Builder (Interaction Core) -->
-            <section class="lg:col-span-7 space-y-6">
-                <div class="card p-6 border border-stone-200">
-                    <h2 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                        <span>Generatore Deck Torneo</span>
-                        <span class="text-xs font-normal bg-stone-100 text-stone-500 px-2 py-1 rounded">Basato sul tuo inventario</span>
-                    </h2>
+        <!-- SECTION 1: INVENTORY (ARCHIVE) -->
+        <section id="inventory" class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+            <div class="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Archivio Componenti</h2>
+                        <p class="text-sm text-slate-500 mt-1">
+                            Aggiungi i tuoi acquisti. Il sistema "smonta" automaticamente i Beyblade stock nei loro componenti base (Blade, Ratchet, Bit).
+                        </p>
+                    </div>
                     
-                    <p class="text-stone-600 mb-6 text-sm">
-                        Seleziona una strategia per generare automaticamente un team di 3 Beyblade ottimizzati usando i tuoi pezzi disponibili.
-                        L'algoritmo assicura che non ci siano duplicati.
-                    </p>
-
-                    <div class="flex flex-wrap gap-3 mb-8">
-                        <button onclick="generateDeck('meta')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-white font-semibold py-3 px-4 rounded-lg transition shadow-md text-sm md:text-base">
-                            Meta Competitivo 🏆
-                        </button>
-                        <button onclick="generateDeck('attack')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition shadow-md text-sm md:text-base">
-                            Full Attack 🔥
-                        </button>
-                        <button onclick="generateDeck('balance')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition shadow-md text-sm md:text-base">
-                            Controllo & Stamina 🛡️
+                    <!-- Input Area -->
+                    <div class="flex w-full md:w-auto gap-2">
+                        <select id="stockComboSelect" class="block w-full rounded-md border-0 py-2.5 px-4 text-slate-900 ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 bg-white shadow-sm">
+                            <option value="" disabled selected>Seleziona un acquisto...</option>
+                            <!-- Populated via JS -->
+                        </select>
+                        <button id="addStockBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md shadow-md transition-all hover:shadow-lg active:scale-95">
+                            + Aggiungi
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Active Deck Display -->
-                    <div id="deck-display" class="space-y-4">
-                        <!-- Filled by JS -->
-                        <div class="text-center py-12 text-stone-400 italic">
-                            Clicca su un bottone strategia per generare il tuo deck.
+            <!-- Inventory Grid -->
+            <div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Blades Column -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-8 bg-red-500 rounded-full"></div>
+                        <h3 class="font-bold text-lg">Blades (Strato)</h3>
+                    </div>
+                    <ul id="inventory-blades" class="space-y-2 h-64 overflow-y-auto pr-2">
+                        <!-- Items injected here -->
+                        <li class="p-4 text-center text-slate-400 bg-slate-50 rounded border border-dashed border-slate-200">Nessuna Blade posseduta</li>
+                    </ul>
+                </div>
+
+                <!-- Ratchets Column -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-8 bg-yellow-500 rounded-full"></div>
+                        <h3 class="font-bold text-lg">Ratchets (Cricchetto)</h3>
+                    </div>
+                    <ul id="inventory-ratchets" class="space-y-2 h-64 overflow-y-auto pr-2">
+                         <li class="p-4 text-center text-slate-400 bg-slate-50 rounded border border-dashed border-slate-200">Nessun Ratchet posseduto</li>
+                    </ul>
+                </div>
+
+                <!-- Bits Column -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-8 bg-green-500 rounded-full"></div>
+                        <h3 class="font-bold text-lg">Bits (Punta)</h3>
+                    </div>
+                    <ul id="inventory-bits" class="space-y-2 h-64 overflow-y-auto pr-2">
+                         <li class="p-4 text-center text-slate-400 bg-slate-50 rounded border border-dashed border-slate-200">Nessun Bit posseduto</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: WORKSHOP (BUILDER & ANALYSIS) -->
+        <section id="builder" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Builder Controls (Left Panel) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 md:p-8">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span>🛠️</span> Officina
+                    </h2>
+                    <p class="text-sm text-slate-500 mb-6">
+                        Seleziona le parti dal tuo inventario per creare una combo. Il sistema calcolerà le sinergie.
+                    </p>
+
+                    <div class="space-y-5">
+                        <!-- Blade Selector -->
+                        <div>
+                            <label class="block text-sm font-medium leading-6 text-slate-900 mb-1">Blade (Anello di Contatto)</label>
+                            <select id="build-blade" class="block w-full rounded-md border-0 py-3 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-blue-600 bg-slate-50">
+                                <option value="">-- Seleziona Blade --</option>
+                            </select>
+                            <p class="text-xs text-slate-500 mt-1" id="desc-blade">Seleziona per vedere le info.</p>
+                        </div>
+
+                        <!-- Ratchet Selector -->
+                        <div>
+                            <label class="block text-sm font-medium leading-6 text-slate-900 mb-1">Ratchet (Altezza & Burst)</label>
+                            <select id="build-ratchet" class="block w-full rounded-md border-0 py-3 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-blue-600 bg-slate-50">
+                                <option value="">-- Seleziona Ratchet --</option>
+                            </select>
+                             <p class="text-xs text-slate-500 mt-1" id="desc-ratchet">...</p>
+                        </div>
+
+                        <!-- Bit Selector -->
+                        <div>
+                            <label class="block text-sm font-medium leading-6 text-slate-900 mb-1">Bit (Movimento)</label>
+                            <select id="build-bit" class="block w-full rounded-md border-0 py-3 px-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-blue-600 bg-slate-50">
+                                <option value="">-- Seleziona Bit --</option>
+                            </select>
+                             <p class="text-xs text-slate-500 mt-1" id="desc-bit">...</p>
                         </div>
                     </div>
 
-                    <!-- Strategy Analysis Text -->
-                    <div id="strategy-explanation" class="mt-6 p-4 bg-stone-50 rounded-lg border border-stone-200 hidden">
-                        <h3 class="font-bold text-stone-800 mb-2">Analisi Strategica</h3>
-                        <p id="strategy-text" class="text-sm text-stone-600 leading-relaxed"></p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Right Column: Stats & Inventory (Context) -->
-            <section class="lg:col-span-5 space-y-6">
-                
-                <!-- Radar Chart -->
-                <div class="card p-6 border border-stone-200">
-                    <h3 class="text-lg font-bold text-stone-800 mb-4">Bilanciamento Team</h3>
-                    <div class="chart-container">
-                        <canvas id="teamRadarChart"></canvas>
-                    </div>
-                    <p class="text-xs text-center text-stone-500 mt-2">Valori stimati basati sui componenti selezionati</p>
-                </div>
-
-                <!-- Inventory Overview -->
-                <div class="card p-6 border border-stone-200 flex flex-col h-96">
-                    <h3 class="text-lg font-bold text-stone-800 mb-4">Il Tuo Inventario</h3>
-                    <div class="overflow-y-auto inventory-scroll flex-1 pr-2">
-                        <table class="w-full text-sm text-left text-stone-600">
-                            <thead class="text-xs text-stone-700 uppercase bg-stone-100 sticky top-0">
-                                <tr>
-                                    <th class="px-2 py-2 rounded-tl-lg">N.</th>
-                                    <th class="px-2 py-2">Blade</th>
-                                    <th class="px-2 py-2">Ratchet</th>
-                                    <th class="px-2 py-2 rounded-tr-lg">Bit</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                    <div class="mt-8 pt-6 border-t border-slate-100 flex gap-4">
+                        <button id="analyzeBtn" class="flex-1 bg-slate-900 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-slate-800 transition-colors">
+                            Analizza Build
+                        </button>
+                        <button id="resetBuildBtn" class="px-4 py-3 text-slate-500 hover:text-red-500 font-medium transition-colors">
+                            Reset
+                        </button>
                     </div>
                 </div>
 
-            </section>
+                <!-- Quick Stats Box -->
+                <div class="bg-blue-50 rounded-xl p-6 border border-blue-100 hidden" id="quick-stats-panel">
+                    <h3 class="font-bold text-blue-900 mb-2">Peso Totale Stimato</h3>
+                    <div class="flex items-end gap-2">
+                        <span class="text-4xl font-black text-blue-600" id="total-weight">0</span>
+                        <span class="text-blue-400 font-medium mb-1">grammi</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis & Visualization (Right Panel) -->
+            <div class="lg:col-span-7">
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-100 p-6 md:p-8 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Valutazione Build</h2>
+                        <div id="grade-badge" class="hidden w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-3xl font-black text-slate-300 border-4 border-slate-200">
+                            -
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="chart-container mb-6 flex-grow flex items-center justify-center bg-slate-50 rounded-xl border border-slate-100">
+                        <canvas id="statsRadar"></canvas>
+                        <div id="chart-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                            Seleziona 3 parti per vedere il grafico
+                        </div>
+                    </div>
+
+                    <!-- AI Analysis Text -->
+                    <div id="analysis-text" class="bg-slate-50 rounded-xl p-5 border-l-4 border-slate-300 text-slate-600 text-sm leading-relaxed min-h-[100px]">
+                        <p class="italic text-slate-400">Completa la build per ricevere il commento tecnico e la motivazione strategica.</p>
+                    </div>
+
+                    <!-- Add to Deck Button -->
+                    <button id="addToDeckBtn" disabled class="mt-6 w-full py-4 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 font-bold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        + Aggiungi al Deck Torneo
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: TOURNAMENT DECK -->
+        <section id="deck" class="space-y-6">
+            <div class="flex items-center gap-4">
+                <h2 class="text-2xl font-bold text-slate-800">Deck Torneo (3on3)</h2>
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Ready to Battle</span>
+            </div>
+            <p class="text-slate-500">
+                La tua selezione finale. Assicurati di non ripetere parti se giochi con regole ufficiali WBO/Takara Tomy.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="deck-grid">
+                <!-- Slot 1 -->
+                <div class="deck-slot bg-white p-6 rounded-2xl shadow border border-slate-200 min-h-[200px] flex flex-col justify-center items-center text-center relative group">
+                    <div class="absolute top-2 left-3 text-slate-200 text-6xl font-black z-0 select-none">1</div>
+                    <div class="z-10 w-full relative">
+                        <div class="empty-state">
+                            <span class="block text-4xl mb-2">🛡️</span>
+                            <span class="text-slate-400 font-medium">Slot Vuoto</span>
+                        </div>
+                        <div class="filled-state hidden text-left">
+                             <!-- JS populates this -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slot 2 -->
+                <div class="deck-slot bg-white p-6 rounded-2xl shadow border border-slate-200 min-h-[200px] flex flex-col justify-center items-center text-center relative group">
+                    <div class="absolute top-2 left-3 text-slate-200 text-6xl font-black z-0 select-none">2</div>
+                    <div class="z-10 w-full relative">
+                         <div class="empty-state">
+                            <span class="block text-4xl mb-2">⚔️</span>
+                            <span class="text-slate-400 font-medium">Slot Vuoto</span>
+                        </div>
+                        <div class="filled-state hidden text-left"></div>
+                    </div>
+                </div>
+
+                <!-- Slot 3 -->
+                <div class="deck-slot bg-white p-6 rounded-2xl shadow border border-slate-200 min-h-[200px] flex flex-col justify-center items-center text-center relative group">
+                    <div class="absolute top-2 left-3 text-slate-200 text-6xl font-black z-0 select-none">3</div>
+                    <div class="z-10 w-full relative">
+                         <div class="empty-state">
+                            <span class="block text-4xl mb-2">🌪️</span>
+                            <span class="text-slate-400 font-medium">Slot Vuoto</span>
+                        </div>
+                        <div class="filled-state hidden text-left"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button onclick="window.print()" class="text-slate-500 hover:text-slate-900 font-medium flex items-center gap-2">
+                    🖨️ Stampa Deck List
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-20 py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-400 text-sm">
+            <p>&copy; 2025 BeyLab X Manager. Fan made tool.</p>
         </div>
-    </div>
+    </footer>
 
     <script>
-        // --- Data & State ---
+        // --- DATA DATABASE (Simulated) ---
+        // This acts as the recognition engine. 
+        // We define the base stats for Blades, Ratchets, and Bits.
         
-        // Raw CSV Data provided by user
-        const rawCsvData = `N.,Blade,Ratchet,Pin (Bit)
-1,Cobalt Dragoon,2-60,C
-2,Gale Wyvern,3-60,T
-3,Savage Bear,3-60,S
-4,Horn Rhino,3-80,S
-5,Sword Dran,3-80,B
-6,Hover Wyvern,3-85,N
-7,Wriggle Kraken S,3-85,O
-8,Arc Wizard R,4-55,O
-9,Scythe Incendio,4-60,T
-10,Beat Tyranno,4-70,Q
-11,Knife Shinobi,4-80,HN
-12,Buster Dran,5-70,DB
-13,Fort Hornet R,7-60,T
-14,Impact Drake,9-60,LR
-15,Phoenix Wing,9-60,GF`;
-
-        // Bit Glossary for better display names
-        const bitGlossary = {
-            'C': 'Cyclone', 'T': 'Taper', 'S': 'Spike', 'B': 'Ball', 'N': 'Needle', 
-            'O': 'Orb', 'Q': 'Quake', 'HN': 'High Needle', 'DB': 'Disc Ball', 
-            'LR': 'Low Rush', 'GF': 'Gear Flat'
+        const PARTS_DB = {
+            blades: {
+                "Dran Sword": { type: "Attack", weight: 35, stats: { atk: 90, def: 30, sta: 20, burstRes: 60 }, desc: "Lama aggressiva a 3 punti di contatto. Eccelle nel KO." },
+                "Hells Scythe": { type: "Balance", weight: 33, stats: { atk: 50, def: 50, sta: 60, burstRes: 70 }, desc: "Bilanciata con ottima capacità di parry." },
+                "Wizard Arrow": { type: "Stamina", weight: 32, stats: { atk: 20, def: 30, sta: 95, burstRes: 50 }, desc: "Forza centrifuga elevata per massima durata." },
+                "Knight Shield": { type: "Defense", weight: 34, stats: { atk: 30, def: 85, sta: 40, burstRes: 80 }, desc: "Forma smussata per assorbire gli impatti." },
+                "Shark Edge": { type: "Attack", weight: 34, stats: { atk: 95, def: 20, sta: 15, burstRes: 50 }, desc: "Lama per uppercut estremi. Alto rischio." },
+                "Viper Tail": { type: "Stamina", weight: 33, stats: { atk: 45, def: 40, sta: 80, burstRes: 60 }, desc: "Lama che destabilizza l'avversario." },
+                "Leon Claw": { type: "Balance", weight: 32, stats: { atk: 60, def: 40, sta: 50, burstRes: 65 }, desc: "Ibrido attacco/difesa." },
+                "Rhino Horn": { type: "Defense", weight: 31, stats: { atk: 40, def: 75, sta: 30, burstRes: 90 }, desc: "Compatta e densa, difficile da spostare." },
+                "Dran Dagger": { type: "Attack", weight: 34, stats: { atk: 85, def: 35, sta: 30, burstRes: 60 }, desc: "Multi-hit barrage attacks." },
+                "Hells Chain": { type: "Balance", weight: 33, stats: { atk: 40, def: 60, sta: 60, burstRes: 75 }, desc: "Assorbe colpi e contrattacca." },
+                "Phoenix Wing": { type: "Attack", weight: 38, stats: { atk: 98, def: 40, sta: 25, burstRes: 55 }, desc: "Lama pesante rivestita in metallo. Top tier." },
+                "Wyvern Gale": { type: "Stamina", weight: 33, stats: { atk: 25, def: 45, sta: 90, burstRes: 60 }, desc: "Aerodinamica per ridurre l'attrito dell'aria." }
+            },
+            ratchets: {
+                "3-60": { height: "Low", points: 3, weight: 6, stats: { burstRes: 80, stability: 70 }, desc: "Basso profilo, 3 punti. Standard solido." },
+                "4-60": { height: "Low", points: 4, weight: 6.5, stats: { burstRes: 60, stability: 80 }, desc: "Basso profilo, 4 punti. Buon bilanciamento." },
+                "5-60": { height: "Low", points: 5, weight: 7, stats: { burstRes: 90, stability: 60 }, desc: "Basso, 5 punti. Alta massa e resistenza al burst." },
+                "3-80": { height: "High", points: 3, weight: 7, stats: { burstRes: 50, stability: 50 }, desc: "Alto profilo. Rischio burst maggiore ma buoni smash." },
+                "4-80": { height: "High", points: 4, weight: 7.5, stats: { burstRes: 40, stability: 60 }, desc: "Alto, 4 punti." },
+                "5-80": { height: "High", points: 5, weight: 8, stats: { burstRes: 70, stability: 40 }, desc: "Alto, pesante. Ottimo per spin finish." },
+                "9-60": { height: "Low", points: 9, weight: 7.5, stats: { burstRes: 85, stability: 85 }, desc: "Molti punti di contatto, difesa circolare." }
+            },
+            bits: {
+                "F (Flat)": { type: "Attack", stats: { speed: 100, sta: 10, def: 20, dash: 100 }, desc: "Movimento aggressivo sulla X-Line." },
+                "T (Taper)": { type: "Attack", stats: { speed: 80, sta: 40, def: 30, dash: 80 }, desc: "Attacco controllato, conserva un po' di stamina." },
+                "B (Ball)": { type: "Stamina", stats: { speed: 10, sta: 100, def: 40, dash: 10 }, desc: "Massima stabilità e tempo di rotazione." },
+                "N (Needle)": { type: "Defense", stats: { speed: 10, sta: 60, def: 90, dash: 20 }, desc: "Punta fine per restare al centro e resistere ai KO." },
+                "HN (High Needle)": { type: "Defense", stats: { speed: 10, sta: 50, def: 85, dash: 20 }, desc: "Needle più alta per parry dall'alto." },
+                "O (Orb)": { type: "Stamina", stats: { speed: 20, sta: 90, def: 50, dash: 15 }, desc: "Sfera piccola, movimento più agile di Ball." },
+                "P (Point)": { type: "Balance", stats: { speed: 60, sta: 50, def: 40, dash: 60 }, desc: "Cambia comportamento a seconda dell'inclinazione." },
+                "LF (Low Flat)": { type: "Attack", stats: { speed: 100, sta: 5, def: 15, dash: 100 }, desc: "Più bassa della Flat, attacco ancora più aggressivo." },
+                "GF (Gear Flat)": { type: "Attack", stats: { speed: 110, sta: 0, def: 10, dash: 110 }, desc: "Ingranaggio enorme per velocità estrema." },
+                "GP (Gear Point)": { type: "Balance", stats: { speed: 70, sta: 40, def: 30, dash: 70 }, desc: "Versione Gear della Point." },
+                "R (Rush)": { type: "Attack", stats: { speed: 85, sta: 30, def: 25, dash: 90 }, desc: "Giri veloci e continui attacchi piccoli." }
+            }
         };
 
-        // Part Stats Estimation (0-10 Scale for Atk, Def, Sta)
-        // Used for calculating the Radar Chart
-        const bladeStats = {
-            'Cobalt Dragoon': { atk: 8, def: 6, sta: 5, type: 'balance' },
-            'Gale Wyvern': { atk: 3, def: 8, sta: 7, type: 'defense' }, // Assuming Defense/Stamina
-            'Savage Bear': { atk: 6, def: 5, sta: 4, type: 'attack' },
-            'Horn Rhino': { atk: 4, def: 9, sta: 4, type: 'defense' },
-            'Sword Dran': { atk: 7, def: 4, sta: 4, type: 'attack' },
-            'Hover Wyvern': { atk: 4, def: 7, sta: 6, type: 'stamina' },
-            'Wriggle Kraken S': { atk: 7, def: 3, sta: 3, type: 'attack' }, // Shark Edge equivalent
-            'Arc Wizard R': { atk: 2, def: 5, sta: 10, type: 'stamina' }, // Wizard Rod equivalent
-            'Scythe Incendio': { atk: 5, def: 5, sta: 8, type: 'balance' }, // Hell Scythe
-            'Beat Tyranno': { atk: 8, def: 4, sta: 4, type: 'attack' }, // Tyranno Beat
-            'Knife Shinobi': { atk: 4, def: 7, sta: 5, type: 'defense' },
-            'Buster Dran': { atk: 10, def: 1, sta: 1, type: 'attack' }, // Dran Buster
-            'Fort Hornet R': { atk: 3, def: 8, sta: 6, type: 'defense' }, // Hells Chain? Or similar
-            'Impact Drake': { atk: 9, def: 2, sta: 2, type: 'attack' }, // Dran Dagger
-            'Phoenix Wing': { atk: 10, def: 3, sta: 4, type: 'attack' }
+        // Stock Combos for "Recognition"
+        const STOCK_COMBOS = [
+            { name: "Dran Sword 3-60F", parts: ["Dran Sword", "3-60", "F (Flat)"] },
+            { name: "Hells Scythe 4-60T", parts: ["Hells Scythe", "4-60", "T (Taper)"] },
+            { name: "Wizard Arrow 4-80B", parts: ["Wizard Arrow", "4-80", "B (Ball)"] },
+            { name: "Knight Shield 3-80N", parts: ["Knight Shield", "3-80", "N (Needle)"] },
+            { name: "Shark Edge 3-60LF", parts: ["Shark Edge", "3-60", "LF (Low Flat)"] },
+            { name: "Leon Claw 5-60P", parts: ["Leon Claw", "5-60", "P (Point)"] },
+            { name: "Viper Tail 5-80O", parts: ["Viper Tail", "5-80", "O (Orb)"] },
+            { name: "Rhino Horn 3-80S", parts: ["Rhino Horn", "3-80", "N (Needle)"] }, // Assuming S maps to Needle-ish logic for this demo
+            { name: "Dran Dagger 4-60R", parts: ["Dran Dagger", "4-60", "R (Rush)"] },
+            { name: "Phoenix Wing 9-60GF", parts: ["Phoenix Wing", "9-60", "GF (Gear Flat)"] },
+            { name: "Wyvern Gale 5-60GB", parts: ["Wyvern Gale", "5-60", "B (Ball)"] } // Simplified
+        ];
+
+        // --- STATE MANAGEMENT ---
+        const state = {
+            inventory: {
+                blades: {},
+                ratchets: {},
+                bits: {}
+            },
+            currentBuild: {
+                blade: null,
+                ratchet: null,
+                bit: null
+            },
+            deck: [null, null, null]
         };
 
-        const bitStats = {
-            'GF': { atk: 10, def: 0, sta: 1 }, // Gear Flat
-            'LR': { atk: 9, def: 1, sta: 2 }, // Low Rush
-            'T': { atk: 6, def: 4, sta: 5 }, // Taper
-            'B': { atk: 1, def: 3, sta: 10 }, // Ball
-            'O': { atk: 1, def: 5, sta: 9 }, // Orb
-            'N': { atk: 1, def: 8, sta: 6 }, // Needle
-            'HN': { atk: 1, def: 9, sta: 5 }, // High Needle
-            'S': { atk: 2, def: 7, sta: 4 }, // Spike
-            'C': { atk: 7, def: 5, sta: 4 }, // Cyclone
-            'Q': { atk: 8, def: 1, sta: 2 }, // Quake
-            'DB': { atk: 4, def: 6, sta: 7 }  // Disc Ball
-        };
-
-        // Parsed Inventory
-        let inventory = [];
-        let availableParts = {
-            blades: [],
-            ratchets: [],
-            bits: []
-        };
-
-        // Chart Instance
-        let radarChart = null;
-
-        // --- Initialization ---
-
-        function init() {
-            parseCSV();
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            populateStockSelect();
+            initChart();
             renderInventory();
-            // Generate default suggestion
-            generateDeck('meta');
+            setupEventListeners();
+        });
+
+        // --- CORE FUNCTIONS ---
+
+        function populateStockSelect() {
+            const select = document.getElementById('stockComboSelect');
+            STOCK_COMBOS.forEach(combo => {
+                const opt = document.createElement('option');
+                opt.value = JSON.stringify(combo.parts);
+                opt.textContent = combo.name;
+                select.appendChild(opt);
+            });
         }
 
-        function parseCSV() {
-            const lines = rawCsvData.trim().split('\n');
-            const headers = lines[0].split(',');
+        function addToInventory(partsArray) {
+            const [blade, ratchet, bit] = partsArray;
             
-            for (let i = 1; i < lines.length; i++) {
-                const row = lines[i].split(',');
-                const item = {
-                    id: row[0],
-                    blade: row[1],
-                    ratchet: row[2],
-                    bitCode: row[3].trim(),
-                    bitName: bitGlossary[row[3].trim()] || row[3].trim()
-                };
-                inventory.push(item);
+            // Helper to safe increment
+            const inc = (cat, item) => state.inventory[cat][item] = (state.inventory[cat][item] || 0) + 1;
+            
+            inc('blades', blade);
+            inc('ratchets', ratchet);
+            inc('bits', bit);
 
-                // Populate separate pools for deck building
-                availableParts.blades.push(item.blade);
-                // For ratchets and bits, we need to know we have them, but keep track of quantity if we were validating imports.
-                // For simple deck building from this list, we assume the list IS the pool.
-                // We handle uniqueness by filtering available items.
-            }
+            renderInventory();
+            updateBuilderDropdowns();
             
-            // Extract unique lists for easy lookup
-            availableParts.ratchets = [...new Set(inventory.map(i => i.ratchet))];
-            availableParts.bits = [...new Set(inventory.map(i => i.bitCode))];
+            // Visual feedback
+            alert(`Aggiunto all'inventario:\nBlade: ${blade}\nRatchet: ${ratchet}\nBit: ${bit}`);
         }
 
         function renderInventory() {
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = inventory.map(item => `
-                <tr class="bg-white border-b hover:bg-stone-50">
-                    <td class="px-2 py-2 font-medium text-stone-900">${item.id}</td>
-                    <td class="px-2 py-2">${item.blade}</td>
-                    <td class="px-2 py-2 text-stone-500">${item.ratchet}</td>
-                    <td class="px-2 py-2 text-stone-500">${item.bitName}</td>
-                </tr>
-            `).join('');
+            const renderList = (category, containerId, dbCat) => {
+                const ul = document.getElementById(containerId);
+                ul.innerHTML = '';
+                const items = state.inventory[category];
+                
+                if (Object.keys(items).length === 0) {
+                    ul.innerHTML = `<li class="p-4 text-center text-slate-400 bg-slate-50 rounded border border-dashed border-slate-200 text-sm">Nessun componente</li>`;
+                    return;
+                }
+
+                for (const [name, count] of Object.entries(items)) {
+                    if (count > 0) {
+                        const li = document.createElement('li');
+                        li.className = "flex justify-between items-center bg-white p-3 rounded border border-slate-200 shadow-sm text-sm";
+                        
+                        // Get type color
+                        let typeColor = "bg-slate-200";
+                        if (category === 'blades' && PARTS_DB.blades[name]) {
+                            const t = PARTS_DB.blades[name].type;
+                            if(t === 'Attack') typeColor = 'bg-red-100 text-red-700';
+                            if(t === 'Stamina') typeColor = 'bg-yellow-100 text-yellow-700';
+                            if(t === 'Defense') typeColor = 'bg-green-100 text-green-700';
+                            if(t === 'Balance') typeColor = 'bg-purple-100 text-purple-700';
+                        }
+
+                        li.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold px-2 py-1 rounded ${typeColor}">${PARTS_DB[category][name]?.type?.substring(0,3).toUpperCase() || 'UNK'}</span>
+                                <span class="font-medium text-slate-700">${name}</span>
+                            </div>
+                            <span class="bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded-full">x${count}</span>
+                        `;
+                        ul.appendChild(li);
+                    }
+                }
+            };
+
+            renderList('blades', 'inventory-blades', 'blades');
+            renderList('ratchets', 'inventory-ratchets', 'ratchets');
+            renderList('bits', 'inventory-bits', 'bits');
         }
 
-        // --- Deck Logic ---
+        function updateBuilderDropdowns() {
+            const populate = (id, category, currentSelection) => {
+                const sel = document.getElementById(id);
+                // Keep the first option (-- Select --)
+                sel.innerHTML = `<option value="">-- Seleziona ${id.split('-')[1]} --</option>`;
+                
+                for (const name of Object.keys(state.inventory[category])) {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = `${name} (x${state.inventory[category][name]})`;
+                    sel.appendChild(opt);
+                }
+                if (currentSelection) sel.value = currentSelection;
+            };
 
-        function generateDeck(strategy) {
-            let deck = [];
-            let strategyText = "";
+            populate('build-blade', 'blades', state.currentBuild.blade);
+            populate('build-ratchet', 'ratchets', state.currentBuild.ratchet);
+            populate('build-bit', 'bits', state.currentBuild.bit);
+        }
 
-            if (strategy === 'meta') {
-                deck = buildMetaDeck();
-                strategyText = "<strong>Combinazione Competitiva:</strong> Questo deck punta a coprire tutte le basi del meta attuale. <br><br>1. <strong>Stamina King:</strong> Arc Wizard su Ball (rubato da Sword Dran) è una delle combo più forti del gioco per resistenza. <br>2. <strong>One-Hit KO:</strong> Phoenix Wing su Gear Flat è progettato per colpire duramente e velocemente. L'obiettivo è buttare fuori l'avversario subito. <br>3. <strong>Anti-Meta:</strong> Cobalt Dragoon su Taper offre spin sinistro per rubare spin o contrattaccare con movimento aggressivo controllato.";
-            } else if (strategy === 'attack') {
-                deck = buildAttackDeck();
-                strategyText = "<strong>Aggressione Totale:</strong> Un deck rischioso ma letale. <br><br>1. <strong>Buster Dran:</strong> Specializzato in colpi verticali devastanti (X-Dash). <br>2. <strong>Phoenix Wing:</strong> Il peso massimo per impatti di massa. <br>3. <strong>Impact Drake:</strong> Un terzo attaccante rapido. <br>Nota: Questo deck soffre contro avversari con alta difesa se non riesce a fare KO nei primi secondi.";
-            } else if (strategy === 'balance') {
-                deck = buildBalanceDeck();
-                strategyText = "<strong>Resilienza e Controllo:</strong> Progettato per sopravvivere. <br><br>1. <strong>Gale Wyvern:</strong> Difesa pura per assorbire colpi. <br>2. <strong>Scythe Incendio:</strong> Un eccellente bilanciamento che può vincere per spin o burst. <br>3. <strong>Arc Wizard:</strong> Ancora per la resistenza finale.";
+        // --- ANALYSIS LOGIC ---
+
+        function calculateBuild() {
+            const b = state.currentBuild.blade;
+            const r = state.currentBuild.ratchet;
+            const bi = state.currentBuild.bit;
+
+            if (!b || !r || !bi) return null;
+
+            const bData = PARTS_DB.blades[b];
+            const rData = PARTS_DB.ratchets[r];
+            const biData = PARTS_DB.bits[bi];
+
+            // Normalize and Sum Stats
+            // Base values:
+            // Attack = Blade Atk + Bit Speed + (Ratchet Weight * 0.5)
+            // Defense = Blade Def + Bit Def + Ratchet Stability
+            // Stamina = Blade Sta + Bit Sta + (Low Ratchet Penalty/Bonus)
+            // Burst Res = Blade Res + Ratchet Res + Bit Dash (Inverse)
+
+            const totalWeight = bData.weight + rData.weight + 2.5; // 2.5 is avg bit weight (simplified)
+
+            const stats = {
+                attack: (bData.stats.atk * 0.6) + (biData.stats.speed * 0.3) + (biData.stats.dash * 0.1),
+                defense: (bData.stats.def * 0.6) + (biData.stats.def * 0.3) + (rData.stats.stability * 0.1),
+                stamina: (bData.stats.sta * 0.6) + (biData.stats.sta * 0.4),
+                weight: (totalWeight / 50) * 100, // Normalize weight to 100 scale (max approx 50g)
+                burstRes: (bData.stats.burstRes * 0.4) + (rData.stats.burstRes * 0.6) 
+            };
+            
+            // Caps
+            Object.keys(stats).forEach(k => stats[k] = Math.min(100, Math.max(0, stats[k])));
+
+            return { stats, raw: { bData, rData, biData, totalWeight } };
+        }
+
+        function analyzeBuild() {
+            const data = calculateBuild();
+            const btn = document.getElementById('addToDeckBtn');
+            const placeholder = document.getElementById('chart-placeholder');
+            const analysisText = document.getElementById('analysis-text');
+            const gradeBadge = document.getElementById('grade-badge');
+            const weightDisplay = document.getElementById('total-weight');
+            const qsPanel = document.getElementById('quick-stats-panel');
+
+            if (!data) {
+                alert("Seleziona tutti e 3 i componenti per analizzare.");
+                return;
             }
 
-            renderDeck(deck);
-            updateExplanation(strategyText);
-            updateChart(deck);
-        }
-
-        // Helper to find a specific part in inventory (simulates "taking" it from the box)
-        function findPart(type, name, excludeList = []) {
-            // Simplified: we just return the name strings, assuming they exist in the pools derived from CSV
-            // Real logic checks if user actually has it. 
-            // Since we derived pools from CSV, if it's in the code below, I must ensure it's in the CSV.
-            return name;
-        }
-
-        function buildMetaDeck() {
-            // Priority 1: Arc Wizard + B (Ball)
-            const bey1 = {
-                role: 'Stamina',
-                blade: 'Arc Wizard R',
-                ratchet: '5-70', // Good height for Wizard
-                bit: 'B', // From Sword Dran
-                desc: 'La scelta migliore per vincere tramite Spin Finish. Il Bit Ball garantisce stabilità estrema.'
-            };
-
-            // Priority 2: Phoenix Wing + GF (Gear Flat)
-            const bey2 = {
-                role: 'Attack',
-                blade: 'Phoenix Wing',
-                ratchet: '9-60', // Heavy weight
-                bit: 'GF', // From itself
-                desc: 'Attaccante pesante. Usa il peso del 9-60 e la velocità del Gear Flat per KO esplosivi.'
-            };
-
-            // Priority 3: Cobalt Dragoon + T (Taper)
-            const bey3 = {
-                role: 'Balance',
-                blade: 'Cobalt Dragoon',
-                ratchet: '2-60', // Good for Dragoon
-                bit: 'T', // From Gale Wyvern or Scythe
-                desc: 'Spin sinistro per counterare gli avversari destri. Taper offre un mix di attacco e stabilità.'
-            };
-
-            return [bey1, bey2, bey3];
-        }
-
-        function buildAttackDeck() {
-            return [
-                {
-                    role: 'Attack',
-                    blade: 'Buster Dran',
-                    ratchet: '5-70', // Stock-ish
-                    bit: 'LR', // Low Rush (Aggressive)
-                    desc: 'Specialista del "One Shot". Punta tutto sul primo impatto.'
-                },
-                {
-                    role: 'Attack',
-                    blade: 'Phoenix Wing',
-                    ratchet: '3-60', // Low profile
-                    bit: 'GF', 
-                    desc: 'Potenza bruta con profilo basso per colpire sotto.'
-                },
-                {
-                    role: 'Attack',
-                    blade: 'Impact Drake',
-                    ratchet: '4-60',
-                    bit: 'T', // Taper allows controlled aggression
-                    desc: 'Attacco rapido e mobile per inseguire avversari elusivi.'
-                }
-            ];
-        }
-
-        function buildBalanceDeck() {
-             return [
-                {
-                    role: 'Stamina',
-                    blade: 'Arc Wizard R',
-                    ratchet: '4-60',
-                    bit: 'O', // Orb is decent stamina if Ball is taken or for variety
-                    desc: 'Resistenza pura usando Orb per stabilità centrale.'
-                },
-                {
-                    role: 'Defense',
-                    blade: 'Horn Rhino',
-                    ratchet: '3-80', // High track often good for Rhino geometry? Actually lower is usually better but 3-80 adds weight down
-                    bit: 'HN', // High Needle for defense
-                    desc: 'Tank difensivo per deflettere gli attacchi bassi.'
-                },
-                {
-                    role: 'Balance',
-                    blade: 'Scythe Incendio',
-                    ratchet: '9-60', // Heavy
-                    bit: 'B', // Ball makes Scythe a stationary tank
-                    desc: 'Un ibrido che diventa quasi impossibile da fermare a fine rotazione.'
-                }
-            ];
-        }
-
-        // --- Rendering ---
-
-        function renderDeck(deck) {
-            const container = document.getElementById('deck-display');
-            container.innerHTML = deck.map((bey, index) => {
-                const bitFullName = bitGlossary[bey.bit] || bey.bit;
-                const slotClass = bey.role.toLowerCase();
-                
-                return `
-                <div class="bey-slot ${slotClass} bg-white p-4 rounded-r-lg border-t border-b border-r border-stone-100 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs font-bold uppercase tracking-wider text-stone-400">Beyblade 0${index + 1} • ${bey.role}</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-stone-800">${bey.blade}</h3>
-                        <div class="flex gap-2 text-sm mt-1">
-                            <span class="bg-stone-100 px-2 py-1 rounded text-stone-600">Ratchet: <strong>${bey.ratchet}</strong></span>
-                            <span class="bg-stone-100 px-2 py-1 rounded text-stone-600">Bit: <strong>${bitFullName}</strong></span>
-                        </div>
-                    </div>
-                    <div class="md:w-1/2 text-sm text-stone-500 italic bg-stone-50 p-2 rounded">
-                        "${bey.desc}"
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        function updateExplanation(text) {
-            const el = document.getElementById('strategy-explanation');
-            const p = document.getElementById('strategy-text');
-            p.innerHTML = text;
-            el.classList.remove('hidden');
-        }
-
-        function updateChart(deck) {
-            // Calculate aggregate stats
-            let totalAtk = 0, totalDef = 0, totalSta = 0;
+            placeholder.style.display = 'none';
+            btn.disabled = false;
+            qsPanel.classList.remove('hidden');
             
-            deck.forEach(bey => {
-                const bStat = bladeStats[bey.blade] || { atk: 5, def: 5, sta: 5 };
-                const bitStat = bitStats[bey.bit] || { atk: 5, def: 5, sta: 5 };
-                
-                // Simple weighted sum
-                totalAtk += bStat.atk + (bitStat.atk * 0.5);
-                totalDef += bStat.def + (bitStat.def * 0.5);
-                totalSta += bStat.sta + (bitStat.sta * 0.5);
+            // Update Chart
+            updateChart(data.stats);
+
+            // Calculate Grade
+            const avg = (data.stats.attack + data.stats.defense + data.stats.stamina + data.stats.burstRes) / 4;
+            let grade = 'C';
+            let color = 'text-slate-400 border-slate-300';
+            
+            if (avg > 75) { grade = 'S'; color = 'text-yellow-500 border-yellow-400 bg-yellow-50'; }
+            else if (avg > 65) { grade = 'A'; color = 'text-red-500 border-red-400 bg-red-50'; }
+            else if (avg > 50) { grade = 'B'; color = 'text-blue-500 border-blue-400 bg-blue-50'; }
+
+            gradeBadge.className = `w-16 h-16 rounded-full flex items-center justify-center text-3xl font-black border-4 shadow-sm ${color}`;
+            gradeBadge.textContent = grade;
+            gradeBadge.classList.remove('hidden');
+
+            weightDisplay.innerText = data.raw.totalWeight.toFixed(1);
+
+            // Generate Motivation Text
+            let text = `<strong class="text-slate-800 block mb-2">Analisi Tecnica:</strong>`;
+            
+            // Synergy Check
+            const bladeType = data.raw.bData.type;
+            const bitType = data.raw.biData.type;
+            const ratchetHeight = data.raw.rData.height;
+
+            if (bladeType === 'Attack' && bitType === 'Attack') {
+                text += `Sinergia eccellente tra Blade e Bit. Questa build è un "Pure Attacker" progettato per vincere tramite Extreme Finish. `;
+            } else if (bladeType === 'Defense' && bitType === 'Attack') {
+                text += `Combinazione ibrida rischiosa. Usare un Bit aggressivo su una Blade difensiva può causare auto-KO, ma offre un contrattacco sorpresa. `;
+            } else if (bladeType === 'Stamina' && ratchetHeight === 'High') {
+                text += `Attenzione: l'uso di un Ratchet alto su una build Stamina aumenta il rischio di Burst se colpita dal basso. `;
+            } else {
+                text += `Build bilanciata. Offre opzioni versatili ma potrebbe non eccellere in nessuna statistica specifica. `;
+            }
+
+            if (data.stats.weight > 80) text += `Il peso elevato la rende difficile da spingere fuori dall'arena. `;
+            if (data.stats.burstRes < 40) text += `<br><span class="text-red-500 font-bold">Avviso Critico:</span> Bassa resistenza al Burst. Evita impatti diretti prolungati.`;
+
+            analysisText.innerHTML = text;
+        }
+
+        // --- CHART JS ---
+        let radarChart;
+
+        function initChart() {
+            const ctx = document.getElementById('statsRadar').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Attacco', 'Difesa', 'Stamina', 'Peso', 'Burst Res'],
+                    datasets: [{
+                        label: 'Statistiche Build',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: {
+                                font: { size: 12, weight: 'bold' },
+                                color: '#64748b'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function updateChart(stats) {
+            radarChart.data.datasets[0].data = [
+                stats.attack,
+                stats.defense,
+                stats.stamina,
+                stats.weight,
+                stats.burstRes
+            ];
+            radarChart.update();
+        }
+
+        // --- DECK MANAGEMENT ---
+
+        function addToDeck() {
+            // Find first empty slot
+            const slotIndex = state.deck.findIndex(s => s === null);
+            
+            if (slotIndex === -1) {
+                alert("Deck pieno! Rimuovi una beyblade prima di aggiungerne un'altra.");
+                return;
+            }
+
+            // Create Deck Object
+            const build = {
+                blade: state.currentBuild.blade,
+                ratchet: state.currentBuild.ratchet,
+                bit: state.currentBuild.bit,
+                stats: calculateBuild().stats
+            };
+
+            state.deck[slotIndex] = build;
+            renderDeck();
+        }
+
+        function removeFromDeck(index) {
+            state.deck[index] = null;
+            renderDeck();
+        }
+
+        function renderDeck() {
+            const slots = document.querySelectorAll('.deck-slot');
+            
+            state.deck.forEach((build, idx) => {
+                const slotEl = slots[idx];
+                const emptyState = slotEl.querySelector('.empty-state');
+                const filledState = slotEl.querySelector('.filled-state');
+
+                if (build) {
+                    emptyState.classList.add('hidden');
+                    filledState.classList.remove('hidden');
+                    
+                    filledState.innerHTML = `
+                        <div class="space-y-1">
+                            <h4 class="font-bold text-slate-900 text-lg border-b border-slate-100 pb-1 mb-2">Build #${idx + 1}</h4>
+                            <div class="text-sm"><span class="text-slate-400 w-16 inline-block">Blade:</span> <strong>${build.blade}</strong></div>
+                            <div class="text-sm"><span class="text-slate-400 w-16 inline-block">Ratchet:</span> <strong>${build.ratchet}</strong></div>
+                            <div class="text-sm"><span class="text-slate-400 w-16 inline-block">Bit:</span> <strong>${build.bit}</strong></div>
+                            <div class="mt-3 flex gap-2 text-xs">
+                                <span class="bg-red-100 text-red-700 px-2 py-1 rounded">ATK ${Math.round(build.stats.attack)}</span>
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded">STA ${Math.round(build.stats.stamina)}</span>
+                            </div>
+                            <button onclick="removeFromDeck(${idx})" class="mt-4 w-full text-xs text-red-400 hover:text-red-600 underline">Rimuovi</button>
+                        </div>
+                    `;
+                    // Add subtle border color based on highest stat
+                    if(build.stats.attack > 80) slotEl.classList.add('border-red-200');
+                    else if(build.stats.stamina > 80) slotEl.classList.add('border-green-200');
+                    else if(build.stats.defense > 80) slotEl.classList.add('border-blue-200');
+
+                } else {
+                    emptyState.classList.remove('hidden');
+                    filledState.classList.add('hidden');
+                    slotEl.className = "deck-slot bg-white p-6 rounded-2xl shadow border border-slate-200 min-h-[200px] flex flex-col justify-center items-center text-center relative group"; // Reset classes
+                }
+            });
+        }
+
+        // --- EVENTS ---
+
+        function setupEventListeners() {
+            document.getElementById('addStockBtn').addEventListener('click', () => {
+                const val = document.getElementById('stockComboSelect').value;
+                if (!val) return;
+                addToInventory(JSON.parse(val));
             });
 
-            const data = [totalAtk, totalDef, totalSta];
-
-            if (radarChart) {
-                radarChart.data.datasets[0].data = data;
-                radarChart.update();
-            } else {
-                const ctx = document.getElementById('teamRadarChart').getContext('2d');
-                radarChart = new Chart(ctx, {
-                    type: 'radar',
-                    data: {
-                        labels: ['Attacco', 'Difesa', 'Stamina'],
-                        datasets: [{
-                            label: 'Potenziale del Deck',
-                            data: data,
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            r: {
-                                beginAtZero: true,
-                                suggestMax: 40, // Rough max potential
-                                grid: { color: '#e5e5e5' },
-                                pointLabels: { font: { size: 12, family: 'Inter' } }
-                            }
-                        },
-                        plugins: {
-                            legend: { display: false }
-                        }
+            const bindSelect = (id, key, descId, cat) => {
+                const el = document.getElementById(id);
+                el.addEventListener('change', (e) => {
+                    state.currentBuild[key] = e.target.value;
+                    // Update desc text
+                    if(e.target.value) {
+                        const info = PARTS_DB[cat][e.target.value];
+                        document.getElementById(descId).textContent = info.desc || "";
+                    } else {
+                        document.getElementById(descId).textContent = "Seleziona...";
                     }
                 });
-            }
-        }
+            };
 
-        // Start App
-        init();
+            bindSelect('build-blade', 'blade', 'desc-blade', 'blades');
+            bindSelect('build-ratchet', 'ratchet', 'desc-ratchet', 'ratchets');
+            bindSelect('build-bit', 'bit', 'desc-bit', 'bits');
+
+            document.getElementById('analyzeBtn').addEventListener('click', analyzeBuild);
+            
+            document.getElementById('resetBuildBtn').addEventListener('click', () => {
+                document.getElementById('build-blade').value = "";
+                document.getElementById('build-ratchet').value = "";
+                document.getElementById('build-bit').value = "";
+                state.currentBuild = { blade: null, ratchet: null, bit: null };
+                document.getElementById('chart-placeholder').style.display = 'flex';
+                document.getElementById('analysis-text').innerHTML = '<p class="italic text-slate-400">Completa la build per ricevere il commento tecnico e la motivazione strategica.</p>';
+                document.getElementById('grade-badge').classList.add('hidden');
+                document.getElementById('addToDeckBtn').disabled = true;
+                document.getElementById('quick-stats-panel').classList.add('hidden');
+                updateChart({attack:0, defense:0, stamina:0, weight:0, burstRes:0});
+            });
+
+            document.getElementById('addToDeckBtn').addEventListener('click', addToDeck);
+        }
 
     </script>
 </body>
