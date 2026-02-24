@@ -3,394 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeyLab X - Master Archive (BX, UX, CX, Hasbro)</title>
+    <title>BeyLab X - Professional Architect v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
-        .radar-container { position: relative; width: 100%; height: 350px; margin: auto; }
-        .grade-s { color: #f59e0b; border-color: #f59e0b; background: #fffbeb; }
-        .grade-a { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
-        .grade-b { color: #3b82f6; border-color: #3b82f6; background: #eff6ff; }
-        .inventory-item:hover .delete-btn { opacity: 1; transform: scale(1); }
-        .delete-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s; cursor: pointer; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        
+        :root {
+            --bey-blue: #3b82f6;
+            --bey-dark: #0f172a;
+            --bey-accent: #06b6d4;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #f1f5f9;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .neo-shadow {
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-link.active {
+            background: var(--bey-blue);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .type-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .atk-bg { background: #fee2e2; color: #ef4444; }
+        .def-bg { background: #dcfce7; color: #22c55e; }
+        .sta-bg { background: #fef9c3; color: #ca8a04; }
+        .bal-bg { background: #f3e8ff; color: #a855f7; }
+
+        .radar-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+        }
+
+        .grade-pill {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: slideIn 0.4s ease-out forwards; }
+
+        .inventory-item:hover .delete-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .delete-btn {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease-in-out;
+        }
     </style>
-    <!-- Chosen Palette: Tech Deep Blue - Sfondo ardesia chiaro, elementi in bianco neve e accenti blu cobalto. -->
+    <!-- Chosen Palette: Aero Carbon - Sfondo Slate-50, Sidebar Midnight, Accenti Blue-600 e Cyan. -->
     <!-- Application Structure Plan: 
-         - Master Database: Integrazione di tutti i codici BX, UX, CX, Hasbro forniti.
-         - Inventory Manager: Scomposizione automatica dei pacchetti in pezzi singoli e rimozione granulare.
-         - Combo Builder: Filtro dinamico sull'inventario posseduto.
-         - AI Evaluator: Calcolo statistiche basato su pesi reali e sinergie serie.
-         - 3on3 Tournament Deck: Slot per la registrazione della squadra.
+         - Layout a Dashboard con Sidebar per navigazione rapida.
+         - Sezione Archivio con filtri Serie e rimozione istantanea pezzi.
+         - Workshop con simulazione radar 5-point.
+         - Deck Manager con preview interattive.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="text-slate-900">
 
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg">X</div>
+    <div class="flex min-h-screen">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-20 lg:w-64 bg-slate-900 text-white flex flex-col sticky top-0 h-screen z-50">
+            <div class="p-6 flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-xl font-black italic shadow-lg shadow-blue-500/20">X</div>
+                <h1 class="hidden lg:block font-black text-xl tracking-tighter">BEYLAB <span class="text-blue-500">PRO</span></h1>
+            </div>
+            
+            <nav class="flex-1 px-4 py-10 space-y-4">
+                <a href="#inventory" class="sidebar-link active flex items-center gap-4 p-4 rounded-2xl transition-all">
+                    <span>📦</span> <span class="hidden lg:block font-bold">L'Archivio</span>
+                </a>
+                <a href="#builder" class="sidebar-link flex items-center gap-4 p-4 rounded-2xl transition-all text-slate-400 hover:text-white">
+                    <span>🔧</span> <span class="hidden lg:block font-bold">Officina</span>
+                </a>
+                <a href="#deck" class="sidebar-link flex items-center gap-4 p-4 rounded-2xl transition-all text-slate-400 hover:text-white">
+                    <span>🏆</span> <span class="hidden lg:block font-bold">Torneo</span>
+                </a>
+            </nav>
+
+            <div class="p-6 border-t border-slate-800">
+                <div class="hidden lg:block">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status Sistema</p>
+                    <p class="text-xs text-green-400 flex items-center gap-2 mt-1">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Nucleo Online
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 lg:p-10 space-y-12">
+
+            <!-- TOPBAR / SEARCH -->
+            <section class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
-                    <h1 class="font-extrabold text-lg tracking-tighter uppercase leading-none">BeyLab <span class="text-blue-600">Archive</span></h1>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">BX • UX • CX • HASBRO</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Benvenuto nell'Area Sviluppo</h2>
+                    <p class="text-slate-500 font-medium">Gestisci l'inventario globale e sperimenta nuove combinazioni.</p>
                 </div>
-            </div>
-            <div class="hidden md:flex gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                <a href="#inventory" class="hover:text-blue-600 transition">Archivio</a>
-                <a href="#builder" class="hover:text-blue-600 transition">Officina</a>
-                <a href="#deck" class="hover:text-blue-600 transition">Torneo</a>
-            </div>
-        </div>
-    </nav>
+                
+                <div class="flex items-center gap-3 bg-white p-2 rounded-2xl neo-shadow w-full lg:w-auto">
+                    <select id="masterSearch" class="bg-transparent border-none outline-none text-sm font-bold px-4 py-2 w-full lg:w-80">
+                        <option value="">Cerca prodotto (Codice o Nome)...</option>
+                    </select>
+                    <button id="quickAddBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95">
+                        Importa
+                    </button>
+                </div>
+            </section>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
-
-        <!-- INVENTORY SECTION -->
-        <section id="inventory" class="space-y-6">
-            <div class="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                <div class="relative z-10 max-w-3xl space-y-6">
-                    <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-tight">Gestione <span class="text-blue-500">Arsenale Totale</span></h2>
-                    <p class="text-slate-400 text-sm md:text-base">Il database è ora aggiornato con tutte le release Takara Tomy e Hasbro. Aggiungi i prodotti e il sistema separerà automaticamente Blade, Ratchet e Bit.</p>
-                    
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <select id="masterProductSelector" class="flex-1 bg-slate-800 border-none rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:ring-2 focus:ring-blue-500 transition">
-                            <option value="">-- Cerca Prodotto (BX, UX, CX, Hasbro) --</option>
-                        </select>
-                        <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition shadow-lg shadow-blue-500/20 active:scale-95">Aggiungi</button>
-                    </div>
-                </div>
-                <div class="absolute right-0 bottom-0 opacity-5 pointer-events-none text-[20rem] font-black italic translate-y-24">BEY</div>
-            </div>
-
-            <!-- INVENTARIO LISTE -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Blades -->
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-2">
-                        <div class="w-2 h-2 bg-red-500 rounded-full"></div> Blades Possedute
-                    </h4>
-                    <div id="inv-blades" class="space-y-2 h-[450px] overflow-y-auto pr-2">
-                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
-                    </div>
-                </div>
-                <!-- Ratchets -->
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="text-[10px] font-black uppercase text-yellow-500 tracking-widest flex items-center gap-2">
-                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div> Ratchets Posseduti
-                    </h4>
-                    <div id="inv-ratchets" class="space-y-2 h-[450px] overflow-y-auto pr-2">
-                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
-                    </div>
-                </div>
-                <!-- Bits -->
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="text-[10px] font-black uppercase text-green-500 tracking-widest flex items-center gap-2">
-                        <div class="w-2 h-2 bg-green-500 rounded-full"></div> Bits Posseduti
-                    </h4>
-                    <div id="inv-bits" class="space-y-2 h-[450px] overflow-y-auto pr-2">
-                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- BUILDER & ANALYSIS -->
-        <section id="builder" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-8">
-                <h3 class="text-xl font-black italic uppercase">Officina Combo</h3>
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Blade</label>
-                        <select id="select-blade" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Ratchet</label>
-                        <select id="select-ratchet" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Bit</label>
-                        <select id="select-bit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
-                    </div>
-                    <div class="pt-4 flex gap-4">
-                        <button id="analyzeBtn" class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 transition">Analizza</button>
-                        <button id="resetBtn" class="px-6 py-4 text-slate-400 hover:text-red-500 font-bold transition">Reset</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analysis -->
-            <div class="lg:col-span-8 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col">
-                <div class="flex justify-between items-start mb-8">
-                    <h3 class="text-xl font-black italic uppercase">Performance Report</h3>
-                    <div id="grade-badge" class="w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-2 border-slate-100 text-slate-300">
-                        <span class="text-[9px] font-bold uppercase">Grade</span>
-                        <span class="text-2xl font-black italic">-</span>
+            <!-- ARCHIVIO & FILTRI -->
+            <section id="inventory" class="space-y-6 scroll-mt-24">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold flex items-center gap-2"><span>📂</span> Archivio Componenti</h3>
+                    <div class="flex gap-2">
+                        <button class="filter-btn text-[10px] font-black uppercase px-3 py-1 bg-blue-50 text-blue-600 rounded-lg" data-filter="all">Tutti</button>
+                        <button class="filter-btn text-[10px] font-black uppercase px-3 py-1 text-slate-400" data-filter="BX">BX</button>
+                        <button class="filter-btn text-[10px] font-black uppercase px-3 py-1 text-slate-400" data-filter="UX">UX</button>
+                        <button class="filter-btn text-[10px] font-black uppercase px-3 py-1 text-slate-400" data-filter="CX">CX</button>
+                        <button class="filter-btn text-[10px] font-black uppercase px-3 py-1 text-slate-400" data-filter="Hasbro">Hasbro</button>
                     </div>
                 </div>
 
-                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div class="radar-container">
-                        <canvas id="radarChart"></canvas>
-                        <div id="chart-msg" class="absolute inset-0 flex items-center justify-center text-slate-300 text-xs italic font-bold">Configura i pezzi...</div>
-                    </div>
-                    <div class="space-y-6">
-                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 min-h-[140px]">
-                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Valutazione AI</h5>
-                            <div id="feedback-text" class="text-xs text-slate-600 italic leading-relaxed">Seleziona i componenti per ricevere il feedback sulla strategia di gioco.</div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Blades -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Lame (Blades)</span>
+                            <span id="count-blades" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 rounded-md">0</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="p-4 bg-blue-50 rounded-2xl text-center">
-                                <span class="block text-[10px] font-bold text-blue-300 uppercase">Peso</span>
-                                <span id="val-weight" class="text-xl font-black text-blue-600">-- g</span>
+                        <div id="inv-blades" class="grid grid-cols-1 gap-3 h-[450px] overflow-y-auto pr-2">
+                            <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-300 italic text-sm">Nessuna Blade</div>
+                        </div>
+                    </div>
+                    <!-- Ratchets -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Cricchetti (Ratchets)</span>
+                            <span id="count-ratchets" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 rounded-md">0</span>
+                        </div>
+                        <div id="inv-ratchets" class="grid grid-cols-1 gap-3 h-[450px] overflow-y-auto pr-2">
+                            <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-300 italic text-sm">Nessun Ratchet</div>
+                        </div>
+                    </div>
+                    <!-- Bits -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between px-2">
+                            <span class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Punte (Bits)</span>
+                            <span id="count-bits" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 rounded-md">0</span>
+                        </div>
+                        <div id="inv-bits" class="grid grid-cols-1 gap-3 h-[450px] overflow-y-auto pr-2">
+                            <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-300 italic text-sm">Nessun Bit</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FORGE (BUILDER) -->
+            <section id="builder" class="grid grid-cols-1 xl:grid-cols-12 gap-8 scroll-mt-24">
+                
+                <div class="xl:col-span-4 bg-slate-900 rounded-[2.5rem] p-8 lg:p-10 text-white shadow-2xl relative overflow-hidden">
+                    <div class="relative z-10 space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-black italic uppercase text-blue-400">Officina di Assemblaggio</h3>
+                            <p class="text-slate-400 text-sm">Combina i pezzi del tuo inventario.</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="group">
+                                <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block group-hover:text-blue-400 transition">Blade</label>
+                                <select id="select-blade" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
                             </div>
-                            <div class="p-4 bg-slate-900 rounded-2xl text-center">
-                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Resistenza</span>
-                                <span id="val-res" class="text-xl font-black text-white">--</span>
+                            <div class="group">
+                                <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block group-hover:text-blue-400 transition">Ratchet</label>
+                                <select id="select-ratchet" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
                             </div>
+                            <div class="group">
+                                <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block group-hover:text-blue-400 transition">Bit</label>
+                                <select id="select-bit" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all"></select>
+                            </div>
+                        </div>
+
+                        <div class="pt-6 flex gap-4">
+                            <button id="analyzeBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all">Analizza Build</button>
+                            <button id="resetBuildBtn" class="px-6 py-4 bg-slate-800 text-slate-400 hover:text-white rounded-2xl transition-all">Reset</button>
                         </div>
                     </div>
                 </div>
 
-                <button id="saveDeckBtn" disabled class="mt-8 w-full py-4 border-2 border-dashed border-slate-200 text-slate-300 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all">
-                    + Aggiungi al Deck Torneo
-                </button>
-            </div>
-        </section>
+                <div class="xl:col-span-8 bg-white rounded-[2.5rem] p-8 lg:p-10 neo-shadow border border-slate-200 flex flex-col">
+                    <div class="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+                        <div>
+                            <h3 class="text-2xl font-black italic uppercase text-slate-800">Report Prestazioni</h3>
+                            <div id="build-tag" class="text-[10px] font-black uppercase px-2 py-1 bg-slate-100 text-slate-400 rounded-md mt-1 inline-block">In attesa</div>
+                        </div>
+                        <div id="grade-pill" class="grade-pill w-20 h-20 rounded-3xl flex flex-col items-center justify-center border-4 border-slate-100 text-slate-300">
+                            <span class="text-[9px] font-black uppercase leading-none">Grade</span>
+                            <span class="text-4xl font-black italic">-</span>
+                        </div>
+                    </div>
 
-        <!-- DECK -->
-        <section id="deck" class="space-y-6 pb-20">
-            <h3 class="text-2xl font-black italic uppercase">Mio Deck 3on3</h3>
-            <div id="deck-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </section>
+                    <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                        <div class="radar-container bg-slate-50/50 rounded-3xl p-4">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div class="glass-card p-6 rounded-3xl border border-slate-100 shadow-sm min-h-[160px]">
+                                <h5 class="text-[10px] font-black uppercase text-blue-600 mb-3 tracking-widest flex items-center gap-2">
+                                    <span>💡</span> Verdetto Tecnico
+                                </h5>
+                                <div id="analysis-motivation" class="text-xs text-slate-600 leading-relaxed font-medium">
+                                    Completa la combo per visualizzare le statistiche e il verdetto dell'IA.
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                                    <span class="block text-[10px] font-black text-slate-400 uppercase mb-1">Massa</span>
+                                    <span id="stat-weight" class="text-2xl font-black text-slate-800">--.- g</span>
+                                </div>
+                                <div class="p-4 bg-blue-900 rounded-2xl text-center text-white">
+                                    <span class="block text-[10px] font-black text-blue-400 uppercase mb-1">Potenza</span>
+                                    <span id="stat-power" class="text-2xl font-black italic">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-    </main>
+                    <button id="addToDeckBtn" disabled class="mt-8 w-full py-5 border-2 border-dashed border-slate-200 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] rounded-3xl hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        + Registra nel Deck Torneo
+                    </button>
+                </div>
+            </section>
+
+            <!-- DECK -->
+            <section id="deck" class="space-y-6 pb-20 scroll-mt-24">
+                <h3 class="text-2xl font-black italic uppercase">Squadra Torneo 3on3</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="deck-container"></div>
+            </section>
+
+        </main>
+    </div>
 
     <script>
-        // --- DATABASE AGGIORNATO (BX, UX, CX, HASBRO) ---
+        // --- DATABASE COMPLETO AGGIORNATO ---
         const MASTER_LIST = [
-            // SERIE BX
-            { id: "BX-01", name: "Dran Sword 3-60F", parts: ["Dran Sword", "3-60", "Flat"] },
-            { id: "BX-02", name: "Hells Scythe 4-60T", parts: ["Hells Scythe", "4-60", "Taper"] },
-            { id: "BX-03", name: "Wizard Arrow 4-80B", parts: ["Wizard Arrow", "4-80", "Ball"] },
-            { id: "BX-04", name: "Knight Shield 3-80N", parts: ["Knight Shield", "3-80", "Needle"] },
-            { id: "BX-05", name: "Wizard Arrow 4-80B (Booster)", parts: ["Wizard Arrow", "4-80", "Ball"] },
-            { id: "BX-06", name: "Knight Shield 3-80N (Booster)", parts: ["Knight Shield", "3-80", "Needle"] },
-            { id: "BX-07", name: "Dran Sword 3-60F (Red)", parts: ["Dran Sword", "3-60", "Flat"] },
-            { id: "BX-08a", name: "Hells Scythe 3-80B", parts: ["Hells Scythe", "3-80", "Ball"] },
-            { id: "BX-08b", name: "Wizard Arrow 4-60N", parts: ["Wizard Arrow", "4-60", "Needle"] },
-            { id: "BX-08c", name: "Knight Shield 4-80T", parts: ["Knight Shield", "4-80", "Taper"] },
-            { id: "BX-13", name: "Knight Lance 4-80HN", parts: ["Knight Lance", "4-80", "High Needle"] },
-            { id: "BX-14a", name: "Shark Edge 3-60LF (Prize)", parts: ["Shark Edge", "3-60", "Low Flat"] },
-            { id: "BX-14b", name: "Wizard Arrow 3-60T", parts: ["Wizard Arrow", "3-60", "Taper"] },
-            { id: "BX-14c", name: "Dran Sword 3-80B", parts: ["Dran Sword", "3-80", "Ball"] },
-            { id: "BX-14d", name: "Hells Scythe 4-80LF", parts: ["Hells Scythe", "4-80", "Low Flat"] },
-            { id: "BX-14e", name: "Knight Shield 4-60LF", parts: ["Knight Shield", "4-60", "Low Flat"] },
-            { id: "BX-15", name: "Leon Claw 5-60P", parts: ["Leon Claw", "5-60", "Point"] },
-            { id: "BX-16a", name: "Viper Tail 5-80O (Prize)", parts: ["Viper Tail", "5-80", "Orb"] },
-            { id: "BX-16b", name: "Viper Tail 4-60F", parts: ["Viper Tail", "4-60", "Flat"] },
-            { id: "BX-16c", name: "Viper Tail 3-80HN", parts: ["Viper Tail", "3-80", "High Needle"] },
-            { id: "BX-17a", name: "Dran Sword 3-60F (Battle Entry)", parts: ["Dran Sword", "3-60", "Flat"] },
-            { id: "BX-17b", name: "Wizard Arrow 4-80B (Battle Entry)", parts: ["Wizard Arrow", "4-80", "Ball"] },
-            { id: "BX-19", name: "Rhino Horn 3-80S", parts: ["Rhino Horn", "3-80", "Spike"] },
-            { id: "BX-20a", name: "Dran Dagger 4-60R", parts: ["Dran Dagger", "4-60", "Rush"] },
-            { id: "BX-20b", name: "Shark Edge 3-80F", parts: ["Shark Edge", "3-80", "Flat"] },
-            { id: "BX-20c", name: "Knight Shield 5-80T", parts: ["Knight Shield", "5-80", "Taper"] },
-            { id: "BX-21a", name: "Hells Chain 5-60HT", parts: ["Hells Chain", "5-60", "High Taper"] },
-            { id: "BX-21b", name: "Knight Lance 3-60LF", parts: ["Knight Lance", "3-60", "Low Flat"] },
-            { id: "BX-21c", name: "Wizard Arrow 4-80N", parts: ["Wizard Arrow", "4-80", "Needle"] },
-            { id: "BX-23", name: "Phoenix Wing 9-60GF", parts: ["Phoenix Wing", "9-60", "Gear Flat"] },
-            { id: "BX-24a", name: "Wyvern Gale 5-80GB (Prize)", parts: ["Wyvern Gale", "5-80", "Gear Ball"] },
-            { id: "BX-24b", name: "Wyvern Gale 3-60T", parts: ["Wyvern Gale", "3-60", "Taper"] },
-            { id: "BX-24c", name: "Knight Lance 4-60GB", parts: ["Knight Lance", "4-60", "Gear Ball"] },
-            { id: "BX-24d", name: "Viper Tail 5-60F", parts: ["Viper Tail", "5-60", "Flat"] },
-            { id: "BX-24e", name: "Leon Claw 3-80HN", parts: ["Leon Claw", "3-80", "High Needle"] },
-            { id: "BX-24f", name: "Wizard Arrow 4-80GB", parts: ["Wizard Arrow", "4-80", "Gear Ball"] },
-            { id: "BX-26", name: "Unicorn Sting 5-60GP", parts: ["Unicorn Sting", "5-60", "Gear Point"] },
-            { id: "BX-27a", name: "Sphinx Cowl 9-80GN (Prize)", parts: ["Sphinx Cowl", "9-80", "Gear Needle"] },
-            { id: "BX-27b", name: "Sphinx Cowl 4-80HT", parts: ["Sphinx Cowl", "4-80", "High Taper"] },
-            { id: "BX-27c", name: "Sphinx Cowl 5-60O", parts: ["Sphinx Cowl", "5-60", "Orb"] },
-            { id: "BX-31a", name: "Tyranno Beat 4-70Q (Prize)", parts: ["Tyranno Beat", "4-70", "Quake"] },
-            { id: "BX-31b", name: "Tyranno Beat 3-60S", parts: ["Tyranno Beat", "3-60", "Spike"] },
-            { id: "BX-31c", name: "Dran Dagger 4-70P", parts: ["Dran Dagger", "4-70", "Point"] },
-            { id: "BX-31d", name: "Shark Edge 1-60Q", parts: ["Shark Edge", "1-60", "Quake"] },
-            { id: "BX-31e", name: "Rhino Horn 5-80Q", parts: ["Rhino Horn", "5-80", "Quake"] },
-            { id: "BX-33", name: "Weiss Tiger 3-60U", parts: ["Weiss Tiger", "3-60", "Unite"] },
-            { id: "BX-34", name: "Cobalt Dragoon 2-60C (Left)", parts: ["Cobalt Dragoon", "2-60", "Cyclone"] },
-            { id: "BX-35a", name: "Black Shell 4-60D (Prize)", parts: ["Black Shell", "4-60", "Dot"] },
-            { id: "BX-35b", name: "Black Shell 9-80B", parts: ["Black Shell", "9-80", "Ball"] },
-            { id: "BX-35c", name: "Unicorn Sting 3-70D", parts: ["Unicorn Sting", "3-70", "Dot"] },
-            { id: "BX-35d", name: "Phoenix Wing 5-80H", parts: ["Phoenix Wing", "5-80", "Hexa"] },
-            { id: "BX-35e", name: "Wizard Rod 1-60R", parts: ["Wizard Rod", "1-60", "Rush"] },
-            { id: "BX-35f", name: "Viper Tail 5-70D", parts: ["Viper Tail", "5-70", "Dot"] },
-            { id: "BX-36a", name: "Whale Wave 5-80E (Prize)", parts: ["Whale Wave", "5-80", "Elevate"] },
-            { id: "BX-36b", name: "Whale Wave 4-70HN", parts: ["Whale Wave", "4-70", "High Needle"] },
-            { id: "BX-36c", name: "Whale Wave 3-80GB", parts: ["Whale Wave", "3-80", "Gear Ball"] },
-            { id: "BX-37", name: "Bear Scratch 5-60F", parts: ["Bear Scratch", "5-60", "Flat"] },
-            { id: "BX-38", name: "Crimson Garuda 4-70TP", parts: ["Crimson Garuda", "4-70", "Trans Point"] },
-            { id: "BX-39a", name: "Shelter Drake 5-70O (Prize)", parts: ["Shelter Drake", "5-70", "Orb"] },
-            { id: "BX-39b", name: "Shelter Drake 3-60D", parts: ["Shelter Drake", "3-60", "Dot"] },
-            { id: "BX-44", name: "Tricera Press M-85BS", parts: ["Tricera Press", "M-85", "Bound Spike"] },
-            { id: "BX-45", name: "Samurai Calibur 6-70M", parts: ["Samurai Calibur", "6-70", "M"] },
-            { id: "BX-46a", name: "Cobalt Drake 9-60R (Red)", parts: ["Cobalt Drake", "9-60", "Rush"] },
-            { id: "BX-46b", name: "Goat Tackle 7-70T", parts: ["Goat Tackle", "7-70", "Taper"] },
-            { id: "BX-48a", name: "Cobalt Dragoon 9-80F", parts: ["Cobalt Dragoon", "9-80", "Flat"] },
-            { id: "BX-48b", name: "Shark Edge 4-70E", parts: ["Shark Edge", "4-70", "Elevate"] },
-            { id: "BX-48c", name: "Mammoth Tusk 7-60S", parts: ["Mammoth Tusk", "7-60", "Spike"] },
-            { id: "BX-48d", name: "Hells Scythe 3-85GB", parts: ["Hells Scythe", "3-85", "Gear Ball"] },
-            { id: "BX-48e", name: "Dran Buster 2-80Q", parts: ["Dran Buster", "2-80", "Quake"] },
-
-            // SERIE UX
-            { id: "UX-01", name: "Dran Buster 1-60A", parts: ["Dran Buster", "1-60", "Accel"] },
-            { id: "UX-02", name: "Hells Hammer 3-70H", parts: ["Hells Hammer", "3-70", "Hexa"] },
-            { id: "UX-03", name: "Wizard Rod 5-70DB", parts: ["Wizard Rod", "5-70", "Disc Ball"] },
-            { id: "UX-05a", name: "Shinobi Shadow 1-80MN (Prize)", parts: ["Shinobi Shadow", "1-80", "Metal Needle"] },
-            { id: "UX-05b", name: "Shinobi Shadow 9-60LF", parts: ["Shinobi Shadow", "9-60", "Low Flat"] },
-            { id: "UX-05c", name: "Shinobi Shadow 3-70GP", parts: ["Shinobi Shadow", "3-70", "Gear Point"] },
-            { id: "UX-06", name: "Leon Crest 7-60GN", parts: ["Leon Crest", "7-60", "Gear Needle"] },
-            { id: "UX-07a", name: "Phoenix Rudder 9-70G (Prize)", parts: ["Phoenix Rudder", "9-70", "Glide"] },
-            { id: "UX-07b", name: "Sphinx Cowl 1-80GF", parts: ["Sphinx Cowl", "1-80", "Gear Flat"] },
-            { id: "UX-07c", name: "Wyvern Gale 2-60S", parts: ["Wyvern Gale", "2-60", "Spike"] },
-            { id: "UX-08", name: "Silver Wolf 3-80FB", parts: ["Silver Wolf", "3-80", "Free Ball"] },
-            { id: "UX-09", name: "Samurai Saber 2-70L", parts: ["Samurai Saber", "2-70", "Level"] },
-            { id: "UX-10a", name: "Knight Mail 3-85BS (Prize)", parts: ["Knight Mail", "3-85", "Bound Spike"] },
-            { id: "UX-10b", name: "Tyranno Beat 1-60RA", parts: ["Tyranno Beat", "1-60", "Rubber Accel"] },
-            { id: "UX-10c", name: "Ptera Swing 7-70B", parts: ["Ptera Swing", "7-70", "Ball"] },
-            { id: "UX-11", name: "Impact Drake 9-60LR", parts: ["Impact Drake", "9-60", "Low Rush"] },
-            { id: "UX-12a", name: "Ghost Circle 0-80GB (Prize)", parts: ["Ghost Circle", "0-80", "Gear Ball"] },
-            { id: "UX-12b", name: "Ghost Circle 4-60H", parts: ["Ghost Circle", "4-60", "Hexa"] },
-            { id: "UX-12c", name: "Shinobi Shadow 3-80F", parts: ["Shinobi Shadow", "3-80", "Flat"] },
-            { id: "UX-12d", name: "Leon Claw 0-80E", parts: ["Leon Claw", "0-80", "Elevate"] },
-            { id: "UX-12e", name: "Phoenix Feather 2-60N", parts: ["Phoenix Feather", "2-60", "Needle"] },
-            { id: "UX-12f", name: "Wyvern Gale 0-80C", parts: ["Wyvern Gale", "0-80", "Cyclone"] },
-            { id: "UX-13", name: "Golem Rock 1-60UN", parts: ["Golem Rock", "1-60", "Under Needle"] },
-            { id: "UX-14", name: "Scorpio Spear 0-70Z", parts: ["Scorpio Spear", "0-70", "Zap"] },
-            { id: "UX-17", name: "Meteor Dragoon 3-70J", parts: ["Meteor Dragoon", "3-70", "J"] },
-            { id: "UX-18a", name: "Mummy Curse 7-55W (Prize)", parts: ["Mummy Curse", "7-55", "Wedge"] },
-            { id: "UX-18b", name: "Mummy Curse 4-60C", parts: ["Mummy Curse", "4-60", "Cyclone"] },
-            { id: "UX-18c", name: "Pegasus Brush M-85W", parts: ["Pegasus Brush", "M-85", "Wedge"] },
-            { id: "UX-18d", name: "Sol Brave C9-70TP", parts: ["Sol Brave", "9-70", "Trans Point"] },
-            { id: "UX-18e", name: "Dran Dagger 7-55G", parts: ["Dran Dagger", "7-55", "Glide"] },
-            { id: "UX-18f", name: "Weiss Tiger 4-80LR", parts: ["Weiss Tiger", "4-80", "Low Rush"] },
-
-            // SERIE CX
-            { id: "CX-01", name: "Dran Brave S6-60V", parts: ["Dran Brave", "6-60", "Vortex"] },
-            { id: "CX-02", name: "Wizard Arc R4-55LO", parts: ["Wizard Arc", "4-55", "Low Orb"] },
-            { id: "CX-05a", name: "Hells Reaper T4-70K (Prize)", parts: ["Hells Reaper", "4-70", "Kick"] },
-            { id: "CX-05b", name: "Rhino Reaper C4-55D (Prize)", parts: ["Rhino Reaper", "4-55", "Dot"] },
-            { id: "CX-05c", name: "Hells Arc T3-85O", parts: ["Hells Arc", "3-85", "Orb"] },
-            { id: "CX-06a", name: "Fox Brush J9-70GR (Prize)", parts: ["Fox Brush", "9-70", "Gear Rush"] },
-            { id: "CX-06b", name: "Fox Brush J0-80DB", parts: ["Fox Brush", "0-80", "Disc Ball"] },
-            { id: "CX-06c", name: "Fox Brush J2-60U", parts: ["Fox Brush", "2-60", "Unite"] },
-            { id: "CX-09", name: "Sol Eclipse D5-70TK", parts: ["Sol Eclipse", "5-70", "TK"] },
-            { id: "CX-10", name: "Wolf Hunt F0-60DB", parts: ["Wolf Hunt", "0-60", "Disc Ball"] },
-            { id: "CX-11", name: "Emperor Might M-85HN", parts: ["Emperor Might", "M-85", "High Needle"] },
-            { id: "CX-12", name: "Phoenix Flare Z9-80WW", parts: ["Phoenix Flare", "9-80", "Wall Wedge"] },
-
-            // HASBRO
-            { id: "F9580", name: "Hasbro: Sword Dran 3-60F", parts: ["Sword Dran", "3-60", "Flat"] },
-            { id: "F9581", name: "Hasbro: Helm Knight 3-80N", parts: ["Helm Knight", "3-80", "Needle"] },
-            { id: "F9582", name: "Hasbro: Arrow Wizard 4-80B", parts: ["Arrow Wizard", "4-80", "Ball"] },
-            { id: "F9583", name: "Hasbro: Scythe Incendio 4-60T", parts: ["Scythe Incendio", "4-60", "Taper"] },
-            { id: "G0184", name: "Hasbro: Lance Knight 4-80HN", parts: ["Lance Knight", "4-80", "High Needle"] },
-            { id: "G0193", name: "Hasbro: Claw Leon 5-60P", parts: ["Claw Leon", "5-60", "Point"] },
-            { id: "G1536", name: "Hasbro: Buster Dran 1-60A", parts: ["Buster Dran", "1-60", "Accel"] },
-            { id: "G1537", name: "Hasbro: Wand Wizard 5-70DB", parts: ["Wand Wizard", "5-70", "Disc Ball"] },
-            { id: "G1538", name: "Hasbro: Wand Wizard 1-60R", parts: ["Wand Wizard", "1-60", "Rush"] },
-            { id: "G1539", name: "Hasbro: Shadow Shinobi 1-80MN", parts: ["Shadow Shinobi", "1-80", "Metal Needle"] },
-            { id: "G1673", name: "Hasbro: Scarlet Garuda 4-70TP", parts: ["Scarlet Garuda", "4-70", "Trans Point"] },
-            { id: "G1674", name: "Hasbro: Sterling Wolf 3-80FB", parts: ["Sterling Wolf", "3-80", "Free Ball"] },
-            { id: "ND1", name: "Hasbro: Gale Wyvern 3-60T", parts: ["Gale Wyvern", "3-60", "Taper"] },
-            { id: "ND2", name: "Hasbro: Sword Dran 3-80B", parts: ["Sword Dran", "3-80", "Ball"] },
-            { id: "ND3", name: "Hasbro: Cowl Sphinx 9-80GN", parts: ["Cowl Sphinx", "9-80", "Gear Needle"] },
-            { id: "ND4", name: "Hasbro: Beat Tyranno 4-70Q", parts: ["Beat Tyranno", "4-70", "Quake"] },
-            { id: "ND5", name: "Hasbro: Knife Shinobi 4-80HN", parts: ["Knife Shinobi", "4-80", "High Needle"] },
-            { id: "ND6", name: "Hasbro: Steel Samurai 4-80T", parts: ["Steel Samurai", "4-80", "Taper"] },
-            { id: "ND7", name: "Hasbro: Arrow Wizard 4-80GB", parts: ["Arrow Wizard", "4-80", "Gear Ball"] }
+            // Takara BX
+            { id: "BX-01", name: "Dran Sword 3-60F", parts: ["Dran Sword", "3-60", "Flat"], series: "BX" },
+            { id: "BX-02", name: "Hells Scythe 4-60T", parts: ["Hells Scythe", "4-60", "Taper"], series: "BX" },
+            { id: "BX-03", name: "Wizard Arrow 4-80B", parts: ["Wizard Arrow", "4-80", "Ball"], series: "BX" },
+            { id: "BX-04", name: "Knight Shield 3-80N", parts: ["Knight Shield", "3-80", "Needle"], series: "BX" },
+            { id: "BX-13", name: "Knight Lance 4-80HN", parts: ["Knight Lance", "4-80", "High Needle"], series: "BX" },
+            { id: "BX-14", name: "Shark Edge 3-60LF", parts: ["Shark Edge", "3-60", "Low Flat"], series: "BX" },
+            { id: "BX-15", name: "Leon Claw 5-60P", parts: ["Leon Claw", "5-60", "Point"], series: "BX" },
+            { id: "BX-19", name: "Rhino Horn 3-80S", parts: ["Rhino Horn", "3-80", "Spike"], series: "BX" },
+            { id: "BX-23", name: "Phoenix Wing 9-60GF", parts: ["Phoenix Wing", "9-60", "Gear Flat"], series: "BX" },
+            { id: "BX-26", name: "Unicorn Sting 5-60GP", parts: ["Unicorn Sting", "5-60", "Gear Point"], series: "BX" },
+            { id: "BX-31", name: "Tyranno Beat 4-70Q", parts: ["Tyranno Beat", "4-70", "Quake"], series: "BX" },
+            { id: "BX-33", name: "Weiss Tiger 3-60U", parts: ["Weiss Tiger", "3-60", "Unite"], series: "BX" },
+            { id: "BX-34", name: "Cobalt Dragoon 2-60C", parts: ["Cobalt Dragoon", "2-60", "Cyclone"], series: "BX" },
+            { id: "BX-35", name: "Black Shell 4-60D", parts: ["Black Shell", "4-60", "Dot"], series: "BX" },
+            { id: "BX-36", name: "Whale Wave 5-80E", parts: ["Whale Wave", "5-80", "Elevate"], series: "BX" },
+            // Takara UX
+            { id: "UX-01", name: "Dran Buster 1-60A", parts: ["Dran Buster", "1-60", "Accel"], series: "UX" },
+            { id: "UX-02", name: "Hells Hammer 3-70H", parts: ["Hells Hammer", "3-70", "Hexa"], series: "UX" },
+            { id: "UX-03", name: "Wizard Rod 5-70DB", parts: ["Wizard Rod", "5-70", "Disc Ball"], series: "UX" },
+            { id: "UX-06", name: "Leon Crest 7-60GN", parts: ["Leon Crest", "7-60", "Gear Needle"], series: "UX" },
+            { id: "UX-08", name: "Silver Wolf 3-80FB", parts: ["Silver Wolf", "3-80", "Free Ball"], series: "UX" },
+            // Hasbro
+            { id: "F9580", name: "Sword Dran 3-60F", parts: ["Sword Dran", "3-60", "Flat"], series: "Hasbro" },
+            { id: "F9583", name: "Scythe Incendio 4-60T", parts: ["Scythe Incendio", "4-60", "Taper"], series: "Hasbro" },
+            { id: "G1537", name: "Wand Wizard 5-70DB", parts: ["Wand Wizard", "5-70", "Disc Ball"], series: "Hasbro" }
         ];
 
-        // --- STATS LOGIC DATABASE ---
-        const COMPONENT_DATA = {
+        const COMP_STATS = {
             blades: {
-                "Dran Sword": { type: "Attack", weight: 35.1 }, "Hells Scythe": { type: "Balance", weight: 32.5 },
-                "Wizard Arrow": { type: "Stamina", weight: 31.8 }, "Knight Shield": { type: "Defense", weight: 33.2 },
-                "Knight Lance": { type: "Defense", weight: 33.5 }, "Shark Edge": { type: "Attack", weight: 33.8 },
-                "Leon Claw": { type: "Balance", weight: 32.1 }, "Viper Tail": { type: "Stamina", weight: 33.5 },
-                "Rhino Horn": { type: "Defense", weight: 31.2 }, "Dran Dagger": { type: "Attack", weight: 34.5 },
-                "Hells Chain": { type: "Balance", weight: 33.2 }, "Phoenix Wing": { type: "Attack", weight: 38.2 },
-                "Wyvern Gale": { type: "Stamina", weight: 33.5 }, "Unicorn Sting": { type: "Balance", weight: 33.2 },
-                "Sphinx Cowl": { type: "Defense", weight: 34.1 }, "Tyranno Beat": { type: "Attack", weight: 36.8 },
-                "Weiss Tiger": { type: "Balance", weight: 34.0 }, "Cobalt Dragoon": { type: "Attack", weight: 37.5 },
-                "Black Shell": { type: "Defense", weight: 34.8 }, "Whale Wave": { type: "Attack", weight: 36.0 },
-                "Bear Scratch": { type: "Attack", weight: 33.5 }, "Crimson Garuda": { type: "Balance", weight: 33.0 },
-                "Shelter Drake": { type: "Stamina", weight: 33.2 }, "Tricera Press": { type: "Defense", weight: 34.5 },
-                "Samurai Calibur": { type: "Attack", weight: 35.2 }, "Cobalt Drake": { type: "Attack", weight: 38.5 },
-                "Goat Tackle": { type: "Defense", weight: 34.2 }, "Mammoth Tusk": { type: "Defense", weight: 35.0 },
-                "Dran Buster": { type: "Attack", weight: 37.8 }, "Hells Hammer": { type: "Balance", weight: 35.5 },
-                "Wizard Rod": { type: "Stamina", weight: 36.5 }, "Shinobi Shadow": { type: "Defense", weight: 33.0 },
-                "Leon Crest": { type: "Defense", weight: 37.5 }, "Phoenix Rudder": { type: "Stamina", weight: 35.8 },
-                "Silver Wolf": { type: "Stamina", weight: 37.0 }, "Samurai Saber": { type: "Attack", weight: 36.2 },
-                "Knight Mail": { type: "Defense", weight: 36.5 }, "Ptera Swing": { type: "Attack", weight: 33.8 },
-                "Impact Drake": { type: "Attack", weight: 37.2 }, "Ghost Circle": { type: "Defense", weight: 35.0 },
-                "Phoenix Feather": { type: "Attack", weight: 32.5 }, "Golem Rock": { type: "Defense", weight: 35.5 },
-                "Scorpio Spear": { type: "Attack", weight: 33.5 }, "Meteor Dragoon": { type: "Attack", weight: 36.5 },
-                "Mummy Curse": { type: "Defense", weight: 35.2 }, "Pegasus Brush": { type: "Attack", weight: 34.5 },
-                "Sol Brave": { type: "Balance", weight: 35.0 }, "Dran Brave": { type: "Attack", weight: 35.0 },
-                "Wizard Arc": { type: "Stamina", weight: 33.5 }, "Hells Reaper": { type: "Attack", weight: 35.5 },
-                "Rhino Reaper": { type: "Defense", weight: 35.2 }, "Hells Arc": { type: "Balance", weight: 35.0 },
-                "Fox Brush": { type: "Attack", weight: 34.5 }, "Pegasus Blast": { type: "Attack", weight: 36.0 },
-                "Cerberus Flame": { type: "Stamina", weight: 34.8 }, "Cerberus Dark": { type: "Attack", weight: 34.5 },
-                "Sol Eclipse": { type: "Balance", weight: 35.0 }, "Wolf Hunt": { type: "Attack", weight: 34.5 },
-                "Emperor Might": { type: "Defense", weight: 36.5 }, "Phoenix Flare": { type: "Stamina", weight: 35.8 },
-                "Sword Dran": { type: "Attack", weight: 35.1 }, "Scythe Incendio": { type: "Balance", weight: 32.8 },
-                "Arrow Wizard": { type: "Stamina", weight: 31.5 }, "Helm Knight": { type: "Defense", weight: 33.2 },
-                "Lance Knight": { type: "Defense", weight: 33.5 }, "Claw Leon": { type: "Balance", weight: 32.1 },
-                "Buster Dran": { type: "Attack", weight: 37.8 }, "Wand Wizard": { type: "Stamina", weight: 36.5 },
-                "Shadow Shinobi": { type: "Defense", weight: 33.0 }, "Scarlet Garuda": { type: "Balance", weight: 33.0 },
-                "Sterling Wolf": { type: "Stamina", weight: 37.0 }, "Gale Wyvern": { type: "Stamina", weight: 33.5 },
-                "Cowl Sphinx": { type: "Defense", weight: 34.1 }, "Beat Tyranno": { type: "Attack", weight: 36.8 },
-                "Knife Shinobi": { type: "Defense", weight: 33.2 }, "Steel Samurai": { type: "Defense", weight: 33.5 }
+                "Dran Sword": { type: "Attack", weight: 35.1, stats: [85, 20, 15, 60, 50], series: "BX" },
+                "Hells Scythe": { type: "Balance", weight: 32.5, stats: [55, 55, 60, 65, 55], series: "BX" },
+                "Wizard Arrow": { type: "Stamina", weight: 31.8, stats: [20, 30, 95, 50, 45], series: "BX" },
+                "Knight Shield": { type: "Defense", weight: 33.2, stats: [35, 90, 40, 80, 50], series: "BX" },
+                "Knight Lance": { type: "Defense", weight: 33.5, stats: [40, 85, 40, 75, 50], series: "BX" },
+                "Shark Edge": { type: "Attack", weight: 33.8, stats: [98, 10, 10, 45, 60], series: "BX" },
+                "Leon Claw": { type: "Balance", weight: 32.1, stats: [60, 45, 45, 65, 50], series: "BX" },
+                "Rhino Horn": { type: "Defense", weight: 31.2, stats: [30, 80, 20, 95, 40], series: "BX" },
+                "Phoenix Wing": { type: "Attack", weight: 38.2, stats: [95, 35, 25, 60, 65], series: "BX" },
+                "Unicorn Sting": { type: "Balance", weight: 33.2, stats: [65, 60, 50, 70, 55], series: "BX" },
+                "Tyranno Beat": { type: "Attack", weight: 36.8, stats: [90, 30, 25, 60, 55], series: "BX" },
+                "Weiss Tiger": { type: "Balance", weight: 34.0, stats: [75, 50, 55, 60, 55], series: "BX" },
+                "Cobalt Dragoon": { type: "Attack", weight: 37.5, stats: [95, 25, 20, 55, 60], series: "BX" },
+                "Black Shell": { type: "Defense", weight: 34.8, stats: [35, 95, 30, 85, 50], series: "BX" },
+                "Whale Wave": { type: "Attack", weight: 36.0, stats: [88, 30, 20, 60, 55], series: "BX" },
+                "Wizard Rod": { type: "Stamina", weight: 36.5, stats: [25, 45, 100, 60, 55], series: "UX" },
+                "Dran Buster": { type: "Attack", weight: 37.8, stats: [100, 15, 10, 55, 60], series: "UX" },
+                "Hells Hammer": { type: "Balance", weight: 35.5, stats: [75, 40, 40, 70, 55], series: "UX" },
+                "Leon Crest": { type: "Defense", weight: 37.5, stats: [30, 100, 35, 85, 55], series: "UX" },
+                "Silver Wolf": { type: "Stamina", weight: 37.0, stats: [35, 40, 98, 65, 50], series: "UX" },
+                "Scythe Incendio": { type: "Balance", weight: 32.8, stats: [55, 55, 65, 65, 55], series: "Hasbro" },
+                "Sword Dran": { type: "Attack", weight: 35.1, stats: [85, 20, 15, 55, 50], series: "Hasbro" }
             },
             ratchets: {
-                "3-60": 6.5, "4-60": 6.8, "5-60": 7.2, "9-60": 7.5, "3-80": 7.0, "5-80": 7.8, "4-80": 7.3, "1-60": 6.4,
-                "2-60": 6.9, "1-80": 7.2, "3-70": 6.8, "7-60": 7.4, "9-70": 7.7, "2-70": 7.1, "3-85": 7.6, "0-80": 7.8,
-                "0-70": 7.5, "7-55": 7.0, "6-60": 7.3, "4-55": 6.7, "4-70": 7.2, "9-70": 7.7, "5-70": 7.4, "M-85": 8.0,
-                "6-70": 7.4, "9-80": 7.9, "7-70": 7.6
+                "3-60": 6.5, "4-60": 6.8, "5-60": 7.2, "9-60": 7.5, "3-80": 7.0, "5-80": 7.8, "4-80": 7.3, "1-60": 6.4, "3-70": 6.8, "7-60": 7.4
             },
             bits: {
-                "Flat": "Attack", "Taper": "Balance", "Ball": "Stamina", "Needle": "Defense", "High Needle": "Defense",
-                "Low Flat": "Attack", "Point": "Balance", "Orb": "Stamina", "Spike": "Defense", "Rush": "Attack",
-                "High Taper": "Balance", "Gear Flat": "Attack", "Gear Ball": "Stamina", "Gear Point": "Balance",
-                "Gear Needle": "Defense", "Quake": "Attack", "Unite": "Balance", "Cyclone": "Stamina", "Dot": "Defense",
-                "Hexa": "Defense", "Rush": "Attack", "Elevate": "Stamina", "Trans Point": "Balance", "Bound Spike": "Defense",
-                "M": "Attack", "Accel": "Attack", "Disc Ball": "Stamina", "Metal Needle": "Defense", "Glide": "Stamina",
-                "Free Ball": "Stamina", "Level": "Attack", "Rubber Accel": "Attack", "Under Needle": "Defense", "Zap": "Attack",
-                "J": "Attack", "Wedge": "Stamina", "Vortex": "Attack", "Low Orb": "Stamina", "Kick": "Balance",
-                "Gear Rush": "Attack", "TK": "Balance", "Wall Wedge": "Stamina"
+                "Flat": "Attack", "Taper": "Balance", "Ball": "Stamina", "Needle": "Defense", "Accel": "Attack", "Low Flat": "Attack", "Point": "Balance", "Orb": "Stamina", "Gear Flat": "Attack", "Quake": "Attack", "Unite": "Balance", "Cyclone": "Stamina", "Disc Ball": "Stamina", "Hexa": "Defense", "Spike": "Defense", "High Needle": "Defense"
             }
         };
 
         const state = {
             inventory: { blades: {}, ratchets: {}, bits: {} },
             deck: [null, null, null],
-            chart: null
+            chart: null,
+            filter: 'all'
         };
 
+        // --- CORE LOGIC ---
+
         function init() {
-            populateSelector();
+            populateSearch();
             initChart();
             loadState();
-            renderInv();
-            updateDropdowns();
-            renderDeck();
+            renderAll();
+            setupFilters();
         }
 
-        function populateSelector() {
-            const s = document.getElementById('masterProductSelector');
+        function populateSearch() {
+            const s = document.getElementById('masterSearch');
             MASTER_LIST.forEach((p, i) => {
                 const o = document.createElement('option');
                 o.value = i;
@@ -399,51 +363,81 @@
             });
         }
 
-        document.getElementById('addBtn').addEventListener('click', () => {
-            const idx = document.getElementById('masterProductSelector').value;
-            if(idx === "") return;
-            const product = MASTER_LIST[idx];
-            const [b, r, bit] = product.parts;
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('bg-blue-50', 'text-blue-600');
+                        b.classList.add('text-slate-400');
+                    });
+                    btn.classList.remove('text-slate-400');
+                    btn.classList.add('bg-blue-50', 'text-blue-600');
+                    state.filter = btn.dataset.filter;
+                    renderAll();
+                });
+            });
+        }
 
+        document.getElementById('quickAddBtn').addEventListener('click', () => {
+            const idx = document.getElementById('masterSearch').value;
+            if (idx === "") return;
+            const p = MASTER_LIST[idx];
             const add = (cat, n) => state.inventory[cat][n] = (state.inventory[cat][n] || 0) + 1;
-            add('blades', b); add('ratchets', r); add('bits', bit);
-            
-            saveState(); renderInv(); updateDropdowns();
+            add('blades', p.parts[0]); add('ratchets', p.parts[1]); add('bits', p.parts[2]);
+            saveState(); renderAll(); updateDropdowns();
         });
 
         function removeItem(cat, name) {
-            if(state.inventory[cat][name] > 0) {
+            if (state.inventory[cat][name] > 0) {
                 state.inventory[cat][name]--;
-                if(state.inventory[cat][name] === 0) delete state.inventory[cat][name];
+                if (state.inventory[cat][name] === 0) {
+                    delete state.inventory[cat][name];
+                }
             }
-            saveState(); renderInv(); updateDropdowns();
+            saveState();
+            renderAll();
+            updateDropdowns();
         }
 
-        function renderInv() {
+        function renderAll() {
             const draw = (cat, elId) => {
-                const c = document.getElementById(elId); c.innerHTML = '';
-                const items = Object.entries(state.inventory[cat]);
-                if(!items.length) {
-                    c.innerHTML = `<div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>`;
+                const container = document.getElementById(elId);
+                container.innerHTML = '';
+                const items = Object.entries(state.inventory[cat]).filter(([name]) => {
+                    if (state.filter === 'all') return true;
+                    if (cat === 'blades') return COMP_STATS.blades[name]?.series === state.filter;
+                    return true;
+                });
+
+                document.getElementById('count-' + cat).innerText = items.reduce((acc, curr) => acc + curr[1], 0);
+
+                if (!items.length) {
+                    container.innerHTML = `<div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-slate-300 italic text-sm">Nessun componente trovato</div>`;
                     return;
                 }
-                items.forEach(([n, count]) => {
-                    const d = document.createElement('div');
-                    d.className = "inventory-item relative bg-white border border-slate-200 p-3 rounded-xl flex justify-between items-center shadow-sm";
-                    d.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="text-[8px] font-black uppercase text-blue-500">Part</span>
-                            <span class="text-xs font-bold text-slate-800">${n}</span>
+
+                items.forEach(([name, count]) => {
+                    const info = cat === 'blades' ? COMP_STATS.blades[name] : null;
+                    const typeClass = info ? `type-badge ${info.type.toLowerCase().substring(0,3)}-bg` : 'type-badge bg-slate-100 text-slate-400';
+                    
+                    const div = document.createElement('div');
+                    div.className = "animate-in bg-white p-4 rounded-2xl neo-shadow flex justify-between items-center group relative border border-transparent hover:border-blue-100 transition-all inventory-item";
+                    div.innerHTML = `
+                        <div class="flex flex-col gap-1">
+                            <span class="${typeClass}">${info ? info.type : 'Pezzo'}</span>
+                            <span class="text-xs font-extrabold text-slate-800">${name}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-[10px] font-bold bg-slate-100 text-slate-400 px-2 py-1 rounded-md">x${count}</span>
-                            <button onclick="removeItem('${cat}', '${n}')" class="delete-btn text-slate-300 hover:text-red-500 transition">🗑️</button>
+                            <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">x${count}</span>
+                            <button onclick="removeItem('${cat}', '${name}')" class="delete-btn bg-red-50 text-red-500 w-8 h-8 rounded-lg flex items-center justify-center">🗑️</button>
                         </div>
                     `;
-                    c.appendChild(d);
+                    container.appendChild(div);
                 });
             };
-            draw('blades', 'inv-blades'); draw('ratchets', 'inv-ratchets'); draw('bits', 'inv-bits');
+            draw('blades', 'inv-blades');
+            draw('ratchets', 'inv-ratchets');
+            draw('bits', 'inv-bits');
         }
 
         function updateDropdowns() {
@@ -453,26 +447,32 @@
                 Object.keys(state.inventory[cat]).forEach(n => {
                     const o = document.createElement('option'); o.value = n; o.textContent = n; s.appendChild(o);
                 });
-                if(state.inventory[cat][prev]) s.value = prev;
+                if (state.inventory[cat][prev]) s.value = prev;
             };
             sync('select-blade', 'blades'); sync('select-ratchet', 'ratchets'); sync('select-bit', 'bits');
         }
 
         // --- ANALYSIS ---
         function initChart() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
+            const ctx = document.getElementById('mainChart').getContext('2d');
             state.chart = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: ['ATTACCO', 'DIFESA', 'STAMINA', 'PESO', 'REAZIONI'],
                     datasets: [{
                         data: [0,0,0,0,0], backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, pointRadius: 0
+                        borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 3, pointRadius: 0
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false }, grid: { color: '#f1f5f9' }, angleLines: { color: '#f1f5f9' }, pointLabels: { font: { size: 9, weight: '800' }, color: '#94a3b8' } } },
+                    scales: { 
+                        r: { 
+                            suggestedMin: 0, suggestedMax: 100, ticks: { display: false }, 
+                            grid: { color: '#f1f5f9' }, angleLines: { color: '#f1f5f9' }, 
+                            pointLabels: { font: { size: 9, weight: '800' }, color: '#94a3b8' } 
+                        } 
+                    },
                     plugins: { legend: { display: false } }
                 }
             });
@@ -482,74 +482,76 @@
             const b = document.getElementById('select-blade').value;
             const r = document.getElementById('select-ratchet').value;
             const bit = document.getElementById('select-bit').value;
-            if(!b || !r || !bit) return;
+            if (!b || !r || !bit) return;
 
-            const bladeData = COMPONENT_DATA.blades[b] || { type: "Balance", weight: 33.0 };
-            const rWeight = COMPONENT_DATA.ratchets[r] || 7.0;
-            const bitType = COMPONENT_DATA.bits[bit] || "Balance";
+            const bD = COMP_STATS.blades[b], rW = COMP_STATS.ratchets[r], bitT = COMP_STATS.bits[bit];
+            const wT = bD.weight + rW + 2.0;
+            
+            const stats = [...bD.stats]; 
+            stats[3] = Math.round((wT / 49) * 100); 
 
-            const totalWeight = bladeData.weight + rWeight + 2.0;
-            
-            // Simplified stat logic
-            let atk = 50, def = 50, sta = 50, res = 50;
-            if(bladeData.type === "Attack") { atk += 30; res += 10; }
-            if(bladeData.type === "Stamina") { sta += 40; }
-            if(bladeData.type === "Defense") { def += 40; res += 20; }
-            if(bitType === "Attack") { atk += 10; res += 10; }
-            if(bitType === "Stamina") { sta += 20; }
-            
-            const stats = [atk, def, sta, (totalWeight/48)*100, res];
             state.chart.data.datasets[0].data = stats;
             state.chart.update();
-            document.getElementById('chart-msg').style.opacity = 0;
 
-            document.getElementById('val-weight').textContent = totalWeight.toFixed(1) + " g";
-            document.getElementById('val-res').textContent = Math.round(res);
+            document.getElementById('stat-weight').textContent = wT.toFixed(1) + " g";
+            document.getElementById('stat-power').textContent = Math.round(stats[0] * (wT/35));
+            
+            const typeTag = document.getElementById('build-tag');
+            typeTag.textContent = bD.type + " Build";
+            typeTag.className = `text-[10px] font-black uppercase px-2 py-1 rounded-md mt-1 inline-block ${bD.type.toLowerCase().substring(0,3)}-bg`;
 
             const avg = stats.reduce((a,c) => a+c, 0)/5;
-            let g = 'C'; if(avg > 78) g = 'S'; else if(avg > 65) g = 'A'; else if(avg > 50) g = 'B';
-            const badge = document.getElementById('grade-badge');
-            badge.className = `w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-2 transition-all grade-${g.toLowerCase()}`;
+            let g = 'C'; if (avg > 78) g = 'S'; else if (avg > 66) g = 'A'; else if (avg > 52) g = 'B';
+            const badge = document.getElementById('grade-pill');
+            badge.className = `grade-pill w-20 h-20 rounded-3xl flex flex-col items-center justify-center border-4 transition-all duration-500 grade-${g.toLowerCase()}`;
             badge.querySelector('span:last-child').textContent = g;
 
-            document.getElementById('feedback-text').innerHTML = `Build <strong>${bladeData.type}</strong> basata su <strong>${b}</strong>. Sinergia <strong>${bitType === bladeData.type ? 'Perfetta' : 'Interessante'}</strong>.`;
-            document.getElementById('saveDeckBtn').disabled = false;
+            let motiv = `Build <strong>${bD.type}</strong>. `;
+            if (wT > 45) motiv += `Il peso elevato fornisce un vantaggio inerziale dominante. `;
+            if (bitT === bD.type) motiv += `Ottima sinergia tra lama e punta. `;
+            
+            document.getElementById('analysis-motivation').innerHTML = motiv;
+            document.getElementById('addToDeckBtn').disabled = false;
             state.currentBuild = { b, r, bit, g };
         });
 
         // --- DECK ---
-        document.getElementById('saveDeckBtn').addEventListener('click', () => {
+        document.getElementById('addToDeckBtn').addEventListener('click', () => {
             const slot = state.deck.findIndex(s => s === null);
-            if(slot === -1) return alert("Deck pieno!");
+            if (slot === -1) return;
             state.deck[slot] = { ...state.currentBuild };
             renderDeck();
         });
 
         function renderDeck() {
-            const g = document.getElementById('deck-grid'); g.innerHTML = '';
+            const container = document.getElementById('deck-container'); container.innerHTML = '';
             state.deck.forEach((b, i) => {
                 const d = document.createElement('div');
-                d.className = `h-48 rounded-[2rem] border-2 p-6 flex flex-col justify-center items-center text-center ` + 
-                    (b ? "bg-white border-slate-200 shadow-md" : "border-dashed border-slate-200 bg-slate-50");
-                if(b) {
+                d.className = "h-56 rounded-[2.5rem] border-2 transition-all p-8 flex flex-col justify-center items-center text-center " + 
+                    (b ? "bg-white border-slate-200 shadow-xl" : "border-dashed border-slate-200 bg-slate-50/50");
+                
+                if (b) {
                     d.innerHTML = `
-                        <div class="w-full text-left">
-                            <span class="text-[9px] font-black text-blue-500 uppercase">Slot #${i+1}</span>
-                            <h5 class="text-sm font-black text-slate-800 mt-1">${b.b}</h5>
-                            <p class="text-[10px] text-slate-400 font-bold">${b.r} / ${b.bit}</p>
-                            <button onclick="removeDeck(${i})" class="mt-6 w-full py-2 bg-red-50 text-red-500 text-[9px] font-black uppercase rounded-lg">Rimuovi</button>
+                        <div class="w-full text-left animate-in">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-[9px] font-black text-blue-500 uppercase tracking-widest">Build #${i+1}</span>
+                                <span class="text-xs font-black italic px-2 py-0.5 rounded-md grade-${b.g.toLowerCase()}">${b.g}</span>
+                            </div>
+                            <h5 class="text-sm font-black text-slate-800">${b.b}</h5>
+                            <p class="text-[10px] font-bold text-slate-400 mt-1">${b.r} / ${b.bit}</p>
+                            <button onclick="removeDeck(${i})" class="mt-6 w-full py-2 bg-red-50 text-red-500 text-[9px] font-black uppercase rounded-xl hover:bg-red-500 hover:text-white transition-all">Rimuovi</button>
                         </div>
                     `;
                 } else {
                     d.innerHTML = `<span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Libero</span>`;
                 }
-                g.appendChild(d);
+                container.appendChild(d);
             });
         }
 
         function removeDeck(i) { state.deck[i] = null; renderDeck(); }
-        function saveState() { localStorage.setItem('beylab_master_v4', JSON.stringify(state.inventory)); }
-        function loadState() { const s = localStorage.getItem('beylab_master_v4'); if(s) state.inventory = JSON.parse(s); }
+        function saveState() { localStorage.setItem('beylab_pro_v2_final', JSON.stringify(state.inventory)); }
+        function loadState() { const s = localStorage.getItem('beylab_pro_v2_final'); if(s) state.inventory = JSON.parse(s); }
 
         window.onload = init;
     </script>
