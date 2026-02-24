@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeyLab X - Hasbro Global Archive</title>
+    <title>BeyLab X - Master Archive (BX, UX, CX, Hasbro)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
@@ -16,110 +16,104 @@
         .grade-s { color: #f59e0b; border-color: #f59e0b; background: #fffbeb; }
         .grade-a { color: #ef4444; border-color: #ef4444; background: #fef2f2; }
         .grade-b { color: #3b82f6; border-color: #3b82f6; background: #eff6ff; }
-        .inventory-card:hover .delete-btn { opacity: 1; transform: scale(1); }
-        .delete-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s; }
+        .inventory-item:hover .delete-btn { opacity: 1; transform: scale(1); }
+        .delete-btn { opacity: 0; transform: scale(0.8); transition: all 0.2s; cursor: pointer; }
     </style>
-    <!-- Chosen Palette: Midnight & Cyan - Fondo Slate-50, elementi UI in bianco neve e accenti Blue-600. Colori semantici per i tipi di Bey. -->
+    <!-- Chosen Palette: Tech Deep Blue - Sfondo ardesia chiaro, elementi in bianco neve e accenti blu cobalto. -->
     <!-- Application Structure Plan: 
-         - Selettore Prodotti Hasbro: Dropdown con tutta la lista Hasbro Wiki.
-         - Archivio Parti: Visualizzazione e rimozione pezzi.
-         - Builder Professionale: Solo pezzi posseduti, calcolo stats basato su meta Hasbro.
-         - 3on3 Deck: Gestione squadra torneo.
+         - Master Database: Integrazione di tutti i codici BX, UX, CX, Hasbro forniti.
+         - Inventory Manager: Scomposizione automatica dei pacchetti in pezzi singoli e rimozione granulare.
+         - Combo Builder: Filtro dinamico sull'inventario posseduto.
+         - AI Evaluator: Calcolo statistiche basato su pesi reali e sinergie serie.
+         - 3on3 Tournament Deck: Slot per la registrazione della squadra.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="text-slate-900">
 
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-blue-200">HX</div>
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg">X</div>
                 <div>
-                    <h1 class="font-black text-lg tracking-tighter uppercase leading-none">BeyLab <span class="text-blue-600">Hasbro</span></h1>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Database Ufficiale Hasbro X</span>
+                    <h1 class="font-extrabold text-lg tracking-tighter uppercase leading-none">BeyLab <span class="text-blue-600">Archive</span></h1>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">BX • UX • CX • HASBRO</span>
                 </div>
             </div>
             <div class="hidden md:flex gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                <a href="#archive" class="hover:text-blue-600 transition">Archivio</a>
+                <a href="#inventory" class="hover:text-blue-600 transition">Archivio</a>
                 <a href="#builder" class="hover:text-blue-600 transition">Officina</a>
-                <a href="#deck" class="hover:text-blue-600 transition">Deck</a>
+                <a href="#deck" class="hover:text-blue-600 transition">Torneo</a>
             </div>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 py-8 space-y-12">
 
-        <!-- Intro -->
-        <section class="bg-slate-900 rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-            <div class="relative z-10 max-w-2xl space-y-4">
-                <h2 class="text-4xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">Domina il <span class="text-blue-500">Meta Hasbro</span></h2>
-                <p class="text-slate-400 text-sm md:text-base">Catalogazione completa di tutti i prodotti Hasbro Beyblade X. Aggiungi i tuoi acquisti e scopri le migliori combinazioni per i tornei WBO e locali.</p>
-            </div>
-            <div class="absolute right-0 bottom-0 opacity-10 pointer-events-none text-[15rem] font-black italic translate-y-20 translate-x-10">BEY</div>
-        </section>
-
-        <!-- ARCHIVIO & AGGIUNTA -->
-        <section id="archive" class="space-y-6">
-            <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
-                <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-                    <div class="flex-1 w-full space-y-4">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Aggiungi Prodotto Hasbro (Starters, Dual Packs, Beystadiums)</label>
-                        <div class="flex gap-2">
-                            <select id="hasbroProductSelector" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 outline-none">
-                                <option value="">-- Cerca Prodotto Hasbro --</option>
-                            </select>
-                            <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition shadow-lg active:scale-95">Aggiungi</button>
-                        </div>
+        <!-- INVENTORY SECTION -->
+        <section id="inventory" class="space-y-6">
+            <div class="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
+                <div class="relative z-10 max-w-3xl space-y-6">
+                    <h2 class="text-4xl font-black italic tracking-tighter uppercase leading-tight">Gestione <span class="text-blue-500">Arsenale Totale</span></h2>
+                    <p class="text-slate-400 text-sm md:text-base">Il database è ora aggiornato con tutte le release Takara Tomy e Hasbro. Aggiungi i prodotti e il sistema separerà automaticamente Blade, Ratchet e Bit.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <select id="masterProductSelector" class="flex-1 bg-slate-800 border-none rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            <option value="">-- Cerca Prodotto (BX, UX, CX, Hasbro) --</option>
+                        </select>
+                        <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition shadow-lg shadow-blue-500/20 active:scale-95">Aggiungi</button>
                     </div>
                 </div>
+                <div class="absolute right-0 bottom-0 opacity-5 pointer-events-none text-[20rem] font-black italic translate-y-24">BEY</div>
+            </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
-                    <!-- Blades -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black uppercase text-red-500 flex items-center gap-2">
-                            <div class="w-2 h-2 bg-red-500 rounded-full"></div> Blades Hasbro
-                        </h4>
-                        <div id="inv-blades" class="space-y-2 h-80 overflow-y-auto pr-2">
-                            <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessuna Blade aggiunta</div>
-                        </div>
+            <!-- INVENTARIO LISTE -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Blades -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 class="text-[10px] font-black uppercase text-red-500 tracking-widest flex items-center gap-2">
+                        <div class="w-2 h-2 bg-red-500 rounded-full"></div> Blades Possedute
+                    </h4>
+                    <div id="inv-blades" class="space-y-2 h-[450px] overflow-y-auto pr-2">
+                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
                     </div>
-                    <!-- Ratchets -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black uppercase text-yellow-500 flex items-center gap-2">
-                            <div class="w-2 h-2 bg-yellow-500 rounded-full"></div> Ratchets
-                        </h4>
-                        <div id="inv-ratchets" class="space-y-2 h-80 overflow-y-auto pr-2">
-                            <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun Ratchet</div>
-                        </div>
+                </div>
+                <!-- Ratchets -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 class="text-[10px] font-black uppercase text-yellow-500 tracking-widest flex items-center gap-2">
+                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div> Ratchets Posseduti
+                    </h4>
+                    <div id="inv-ratchets" class="space-y-2 h-[450px] overflow-y-auto pr-2">
+                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
                     </div>
-                    <!-- Bits -->
-                    <div class="space-y-4">
-                        <h4 class="text-[10px] font-black uppercase text-green-500 flex items-center gap-2">
-                            <div class="w-2 h-2 bg-green-500 rounded-full"></div> Bits
-                        </h4>
-                        <div id="inv-bits" class="space-y-2 h-80 overflow-y-auto pr-2">
-                            <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun Bit</div>
-                        </div>
+                </div>
+                <!-- Bits -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 class="text-[10px] font-black uppercase text-green-500 tracking-widest flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div> Bits Posseduti
+                    </h4>
+                    <div id="inv-bits" class="space-y-2 h-[450px] overflow-y-auto pr-2">
+                        <div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- BUILDER -->
+        <!-- BUILDER & ANALYSIS -->
         <section id="builder" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-5 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-8">
-                <h3 class="text-xl font-black italic uppercase">Officina Build</h3>
+            <div class="lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm space-y-8">
+                <h3 class="text-xl font-black italic uppercase">Officina Combo</h3>
                 <div class="space-y-6">
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Blade</label>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Blade</label>
                         <select id="select-blade" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Ratchet</label>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Ratchet</label>
                         <select id="select-ratchet" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Bit</label>
+                        <label class="text-[10px] font-black uppercase text-slate-400">Seleziona Bit</label>
                         <select id="select-bit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-sm font-bold focus:ring-2 focus:ring-blue-600 outline-none"></select>
                     </div>
                     <div class="pt-4 flex gap-4">
@@ -129,8 +123,8 @@
                 </div>
             </div>
 
-            <!-- Analisi -->
-            <div class="lg:col-span-7 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col">
+            <!-- Analysis -->
+            <div class="lg:col-span-8 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col">
                 <div class="flex justify-between items-start mb-8">
                     <h3 class="text-xl font-black italic uppercase">Performance Report</h3>
                     <div id="grade-badge" class="w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-2 border-slate-100 text-slate-300">
@@ -142,21 +136,21 @@
                 <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     <div class="radar-container">
                         <canvas id="radarChart"></canvas>
-                        <div id="chart-msg" class="absolute inset-0 flex items-center justify-center text-slate-300 text-xs italic font-bold">In attesa di componenti...</div>
+                        <div id="chart-msg" class="absolute inset-0 flex items-center justify-center text-slate-300 text-xs italic font-bold">Configura i pezzi...</div>
                     </div>
                     <div class="space-y-6">
-                        <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Feedback Strategico</h5>
-                            <div id="feedback-text" class="text-xs text-slate-600 italic leading-relaxed">Completa la build per ricevere la valutazione tecnica.</div>
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 min-h-[140px]">
+                            <h5 class="text-[10px] font-black uppercase text-slate-400 mb-3 tracking-widest">Valutazione AI</h5>
+                            <div id="feedback-text" class="text-xs text-slate-600 italic leading-relaxed">Seleziona i componenti per ricevere il feedback sulla strategia di gioco.</div>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="p-4 bg-blue-50 rounded-xl text-center">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 bg-blue-50 rounded-2xl text-center">
                                 <span class="block text-[10px] font-bold text-blue-300 uppercase">Peso</span>
                                 <span id="val-weight" class="text-xl font-black text-blue-600">-- g</span>
                             </div>
-                            <div class="p-4 bg-slate-900 rounded-xl text-center">
-                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Burst Res.</span>
-                                <span id="val-burst" class="text-xl font-black text-white">--</span>
+                            <div class="p-4 bg-slate-900 rounded-2xl text-center">
+                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Resistenza</span>
+                                <span id="val-res" class="text-xl font-black text-white">--</span>
                             </div>
                         </div>
                     </div>
@@ -177,118 +171,244 @@
     </main>
 
     <script>
-        // --- DATABASE COMPONENTI HASBRO ---
-        const PARTS_DB = {
+        // --- DATABASE AGGIORNATO (BX, UX, CX, HASBRO) ---
+        const MASTER_LIST = [
+            // SERIE BX
+            { id: "BX-01", name: "Dran Sword 3-60F", parts: ["Dran Sword", "3-60", "Flat"] },
+            { id: "BX-02", name: "Hells Scythe 4-60T", parts: ["Hells Scythe", "4-60", "Taper"] },
+            { id: "BX-03", name: "Wizard Arrow 4-80B", parts: ["Wizard Arrow", "4-80", "Ball"] },
+            { id: "BX-04", name: "Knight Shield 3-80N", parts: ["Knight Shield", "3-80", "Needle"] },
+            { id: "BX-05", name: "Wizard Arrow 4-80B (Booster)", parts: ["Wizard Arrow", "4-80", "Ball"] },
+            { id: "BX-06", name: "Knight Shield 3-80N (Booster)", parts: ["Knight Shield", "3-80", "Needle"] },
+            { id: "BX-07", name: "Dran Sword 3-60F (Red)", parts: ["Dran Sword", "3-60", "Flat"] },
+            { id: "BX-08a", name: "Hells Scythe 3-80B", parts: ["Hells Scythe", "3-80", "Ball"] },
+            { id: "BX-08b", name: "Wizard Arrow 4-60N", parts: ["Wizard Arrow", "4-60", "Needle"] },
+            { id: "BX-08c", name: "Knight Shield 4-80T", parts: ["Knight Shield", "4-80", "Taper"] },
+            { id: "BX-13", name: "Knight Lance 4-80HN", parts: ["Knight Lance", "4-80", "High Needle"] },
+            { id: "BX-14a", name: "Shark Edge 3-60LF (Prize)", parts: ["Shark Edge", "3-60", "Low Flat"] },
+            { id: "BX-14b", name: "Wizard Arrow 3-60T", parts: ["Wizard Arrow", "3-60", "Taper"] },
+            { id: "BX-14c", name: "Dran Sword 3-80B", parts: ["Dran Sword", "3-80", "Ball"] },
+            { id: "BX-14d", name: "Hells Scythe 4-80LF", parts: ["Hells Scythe", "4-80", "Low Flat"] },
+            { id: "BX-14e", name: "Knight Shield 4-60LF", parts: ["Knight Shield", "4-60", "Low Flat"] },
+            { id: "BX-15", name: "Leon Claw 5-60P", parts: ["Leon Claw", "5-60", "Point"] },
+            { id: "BX-16a", name: "Viper Tail 5-80O (Prize)", parts: ["Viper Tail", "5-80", "Orb"] },
+            { id: "BX-16b", name: "Viper Tail 4-60F", parts: ["Viper Tail", "4-60", "Flat"] },
+            { id: "BX-16c", name: "Viper Tail 3-80HN", parts: ["Viper Tail", "3-80", "High Needle"] },
+            { id: "BX-17a", name: "Dran Sword 3-60F (Battle Entry)", parts: ["Dran Sword", "3-60", "Flat"] },
+            { id: "BX-17b", name: "Wizard Arrow 4-80B (Battle Entry)", parts: ["Wizard Arrow", "4-80", "Ball"] },
+            { id: "BX-19", name: "Rhino Horn 3-80S", parts: ["Rhino Horn", "3-80", "Spike"] },
+            { id: "BX-20a", name: "Dran Dagger 4-60R", parts: ["Dran Dagger", "4-60", "Rush"] },
+            { id: "BX-20b", name: "Shark Edge 3-80F", parts: ["Shark Edge", "3-80", "Flat"] },
+            { id: "BX-20c", name: "Knight Shield 5-80T", parts: ["Knight Shield", "5-80", "Taper"] },
+            { id: "BX-21a", name: "Hells Chain 5-60HT", parts: ["Hells Chain", "5-60", "High Taper"] },
+            { id: "BX-21b", name: "Knight Lance 3-60LF", parts: ["Knight Lance", "3-60", "Low Flat"] },
+            { id: "BX-21c", name: "Wizard Arrow 4-80N", parts: ["Wizard Arrow", "4-80", "Needle"] },
+            { id: "BX-23", name: "Phoenix Wing 9-60GF", parts: ["Phoenix Wing", "9-60", "Gear Flat"] },
+            { id: "BX-24a", name: "Wyvern Gale 5-80GB (Prize)", parts: ["Wyvern Gale", "5-80", "Gear Ball"] },
+            { id: "BX-24b", name: "Wyvern Gale 3-60T", parts: ["Wyvern Gale", "3-60", "Taper"] },
+            { id: "BX-24c", name: "Knight Lance 4-60GB", parts: ["Knight Lance", "4-60", "Gear Ball"] },
+            { id: "BX-24d", name: "Viper Tail 5-60F", parts: ["Viper Tail", "5-60", "Flat"] },
+            { id: "BX-24e", name: "Leon Claw 3-80HN", parts: ["Leon Claw", "3-80", "High Needle"] },
+            { id: "BX-24f", name: "Wizard Arrow 4-80GB", parts: ["Wizard Arrow", "4-80", "Gear Ball"] },
+            { id: "BX-26", name: "Unicorn Sting 5-60GP", parts: ["Unicorn Sting", "5-60", "Gear Point"] },
+            { id: "BX-27a", name: "Sphinx Cowl 9-80GN (Prize)", parts: ["Sphinx Cowl", "9-80", "Gear Needle"] },
+            { id: "BX-27b", name: "Sphinx Cowl 4-80HT", parts: ["Sphinx Cowl", "4-80", "High Taper"] },
+            { id: "BX-27c", name: "Sphinx Cowl 5-60O", parts: ["Sphinx Cowl", "5-60", "Orb"] },
+            { id: "BX-31a", name: "Tyranno Beat 4-70Q (Prize)", parts: ["Tyranno Beat", "4-70", "Quake"] },
+            { id: "BX-31b", name: "Tyranno Beat 3-60S", parts: ["Tyranno Beat", "3-60", "Spike"] },
+            { id: "BX-31c", name: "Dran Dagger 4-70P", parts: ["Dran Dagger", "4-70", "Point"] },
+            { id: "BX-31d", name: "Shark Edge 1-60Q", parts: ["Shark Edge", "1-60", "Quake"] },
+            { id: "BX-31e", name: "Rhino Horn 5-80Q", parts: ["Rhino Horn", "5-80", "Quake"] },
+            { id: "BX-33", name: "Weiss Tiger 3-60U", parts: ["Weiss Tiger", "3-60", "Unite"] },
+            { id: "BX-34", name: "Cobalt Dragoon 2-60C (Left)", parts: ["Cobalt Dragoon", "2-60", "Cyclone"] },
+            { id: "BX-35a", name: "Black Shell 4-60D (Prize)", parts: ["Black Shell", "4-60", "Dot"] },
+            { id: "BX-35b", name: "Black Shell 9-80B", parts: ["Black Shell", "9-80", "Ball"] },
+            { id: "BX-35c", name: "Unicorn Sting 3-70D", parts: ["Unicorn Sting", "3-70", "Dot"] },
+            { id: "BX-35d", name: "Phoenix Wing 5-80H", parts: ["Phoenix Wing", "5-80", "Hexa"] },
+            { id: "BX-35e", name: "Wizard Rod 1-60R", parts: ["Wizard Rod", "1-60", "Rush"] },
+            { id: "BX-35f", name: "Viper Tail 5-70D", parts: ["Viper Tail", "5-70", "Dot"] },
+            { id: "BX-36a", name: "Whale Wave 5-80E (Prize)", parts: ["Whale Wave", "5-80", "Elevate"] },
+            { id: "BX-36b", name: "Whale Wave 4-70HN", parts: ["Whale Wave", "4-70", "High Needle"] },
+            { id: "BX-36c", name: "Whale Wave 3-80GB", parts: ["Whale Wave", "3-80", "Gear Ball"] },
+            { id: "BX-37", name: "Bear Scratch 5-60F", parts: ["Bear Scratch", "5-60", "Flat"] },
+            { id: "BX-38", name: "Crimson Garuda 4-70TP", parts: ["Crimson Garuda", "4-70", "Trans Point"] },
+            { id: "BX-39a", name: "Shelter Drake 5-70O (Prize)", parts: ["Shelter Drake", "5-70", "Orb"] },
+            { id: "BX-39b", name: "Shelter Drake 3-60D", parts: ["Shelter Drake", "3-60", "Dot"] },
+            { id: "BX-44", name: "Tricera Press M-85BS", parts: ["Tricera Press", "M-85", "Bound Spike"] },
+            { id: "BX-45", name: "Samurai Calibur 6-70M", parts: ["Samurai Calibur", "6-70", "M"] },
+            { id: "BX-46a", name: "Cobalt Drake 9-60R (Red)", parts: ["Cobalt Drake", "9-60", "Rush"] },
+            { id: "BX-46b", name: "Goat Tackle 7-70T", parts: ["Goat Tackle", "7-70", "Taper"] },
+            { id: "BX-48a", name: "Cobalt Dragoon 9-80F", parts: ["Cobalt Dragoon", "9-80", "Flat"] },
+            { id: "BX-48b", name: "Shark Edge 4-70E", parts: ["Shark Edge", "4-70", "Elevate"] },
+            { id: "BX-48c", name: "Mammoth Tusk 7-60S", parts: ["Mammoth Tusk", "7-60", "Spike"] },
+            { id: "BX-48d", name: "Hells Scythe 3-85GB", parts: ["Hells Scythe", "3-85", "Gear Ball"] },
+            { id: "BX-48e", name: "Dran Buster 2-80Q", parts: ["Dran Buster", "2-80", "Quake"] },
+
+            // SERIE UX
+            { id: "UX-01", name: "Dran Buster 1-60A", parts: ["Dran Buster", "1-60", "Accel"] },
+            { id: "UX-02", name: "Hells Hammer 3-70H", parts: ["Hells Hammer", "3-70", "Hexa"] },
+            { id: "UX-03", name: "Wizard Rod 5-70DB", parts: ["Wizard Rod", "5-70", "Disc Ball"] },
+            { id: "UX-05a", name: "Shinobi Shadow 1-80MN (Prize)", parts: ["Shinobi Shadow", "1-80", "Metal Needle"] },
+            { id: "UX-05b", name: "Shinobi Shadow 9-60LF", parts: ["Shinobi Shadow", "9-60", "Low Flat"] },
+            { id: "UX-05c", name: "Shinobi Shadow 3-70GP", parts: ["Shinobi Shadow", "3-70", "Gear Point"] },
+            { id: "UX-06", name: "Leon Crest 7-60GN", parts: ["Leon Crest", "7-60", "Gear Needle"] },
+            { id: "UX-07a", name: "Phoenix Rudder 9-70G (Prize)", parts: ["Phoenix Rudder", "9-70", "Glide"] },
+            { id: "UX-07b", name: "Sphinx Cowl 1-80GF", parts: ["Sphinx Cowl", "1-80", "Gear Flat"] },
+            { id: "UX-07c", name: "Wyvern Gale 2-60S", parts: ["Wyvern Gale", "2-60", "Spike"] },
+            { id: "UX-08", name: "Silver Wolf 3-80FB", parts: ["Silver Wolf", "3-80", "Free Ball"] },
+            { id: "UX-09", name: "Samurai Saber 2-70L", parts: ["Samurai Saber", "2-70", "Level"] },
+            { id: "UX-10a", name: "Knight Mail 3-85BS (Prize)", parts: ["Knight Mail", "3-85", "Bound Spike"] },
+            { id: "UX-10b", name: "Tyranno Beat 1-60RA", parts: ["Tyranno Beat", "1-60", "Rubber Accel"] },
+            { id: "UX-10c", name: "Ptera Swing 7-70B", parts: ["Ptera Swing", "7-70", "Ball"] },
+            { id: "UX-11", name: "Impact Drake 9-60LR", parts: ["Impact Drake", "9-60", "Low Rush"] },
+            { id: "UX-12a", name: "Ghost Circle 0-80GB (Prize)", parts: ["Ghost Circle", "0-80", "Gear Ball"] },
+            { id: "UX-12b", name: "Ghost Circle 4-60H", parts: ["Ghost Circle", "4-60", "Hexa"] },
+            { id: "UX-12c", name: "Shinobi Shadow 3-80F", parts: ["Shinobi Shadow", "3-80", "Flat"] },
+            { id: "UX-12d", name: "Leon Claw 0-80E", parts: ["Leon Claw", "0-80", "Elevate"] },
+            { id: "UX-12e", name: "Phoenix Feather 2-60N", parts: ["Phoenix Feather", "2-60", "Needle"] },
+            { id: "UX-12f", name: "Wyvern Gale 0-80C", parts: ["Wyvern Gale", "0-80", "Cyclone"] },
+            { id: "UX-13", name: "Golem Rock 1-60UN", parts: ["Golem Rock", "1-60", "Under Needle"] },
+            { id: "UX-14", name: "Scorpio Spear 0-70Z", parts: ["Scorpio Spear", "0-70", "Zap"] },
+            { id: "UX-17", name: "Meteor Dragoon 3-70J", parts: ["Meteor Dragoon", "3-70", "J"] },
+            { id: "UX-18a", name: "Mummy Curse 7-55W (Prize)", parts: ["Mummy Curse", "7-55", "Wedge"] },
+            { id: "UX-18b", name: "Mummy Curse 4-60C", parts: ["Mummy Curse", "4-60", "Cyclone"] },
+            { id: "UX-18c", name: "Pegasus Brush M-85W", parts: ["Pegasus Brush", "M-85", "Wedge"] },
+            { id: "UX-18d", name: "Sol Brave C9-70TP", parts: ["Sol Brave", "9-70", "Trans Point"] },
+            { id: "UX-18e", name: "Dran Dagger 7-55G", parts: ["Dran Dagger", "7-55", "Glide"] },
+            { id: "UX-18f", name: "Weiss Tiger 4-80LR", parts: ["Weiss Tiger", "4-80", "Low Rush"] },
+
+            // SERIE CX
+            { id: "CX-01", name: "Dran Brave S6-60V", parts: ["Dran Brave", "6-60", "Vortex"] },
+            { id: "CX-02", name: "Wizard Arc R4-55LO", parts: ["Wizard Arc", "4-55", "Low Orb"] },
+            { id: "CX-05a", name: "Hells Reaper T4-70K (Prize)", parts: ["Hells Reaper", "4-70", "Kick"] },
+            { id: "CX-05b", name: "Rhino Reaper C4-55D (Prize)", parts: ["Rhino Reaper", "4-55", "Dot"] },
+            { id: "CX-05c", name: "Hells Arc T3-85O", parts: ["Hells Arc", "3-85", "Orb"] },
+            { id: "CX-06a", name: "Fox Brush J9-70GR (Prize)", parts: ["Fox Brush", "9-70", "Gear Rush"] },
+            { id: "CX-06b", name: "Fox Brush J0-80DB", parts: ["Fox Brush", "0-80", "Disc Ball"] },
+            { id: "CX-06c", name: "Fox Brush J2-60U", parts: ["Fox Brush", "2-60", "Unite"] },
+            { id: "CX-09", name: "Sol Eclipse D5-70TK", parts: ["Sol Eclipse", "5-70", "TK"] },
+            { id: "CX-10", name: "Wolf Hunt F0-60DB", parts: ["Wolf Hunt", "0-60", "Disc Ball"] },
+            { id: "CX-11", name: "Emperor Might M-85HN", parts: ["Emperor Might", "M-85", "High Needle"] },
+            { id: "CX-12", name: "Phoenix Flare Z9-80WW", parts: ["Phoenix Flare", "9-80", "Wall Wedge"] },
+
+            // HASBRO
+            { id: "F9580", name: "Hasbro: Sword Dran 3-60F", parts: ["Sword Dran", "3-60", "Flat"] },
+            { id: "F9581", name: "Hasbro: Helm Knight 3-80N", parts: ["Helm Knight", "3-80", "Needle"] },
+            { id: "F9582", name: "Hasbro: Arrow Wizard 4-80B", parts: ["Arrow Wizard", "4-80", "Ball"] },
+            { id: "F9583", name: "Hasbro: Scythe Incendio 4-60T", parts: ["Scythe Incendio", "4-60", "Taper"] },
+            { id: "G0184", name: "Hasbro: Lance Knight 4-80HN", parts: ["Lance Knight", "4-80", "High Needle"] },
+            { id: "G0193", name: "Hasbro: Claw Leon 5-60P", parts: ["Claw Leon", "5-60", "Point"] },
+            { id: "G1536", name: "Hasbro: Buster Dran 1-60A", parts: ["Buster Dran", "1-60", "Accel"] },
+            { id: "G1537", name: "Hasbro: Wand Wizard 5-70DB", parts: ["Wand Wizard", "5-70", "Disc Ball"] },
+            { id: "G1538", name: "Hasbro: Wand Wizard 1-60R", parts: ["Wand Wizard", "1-60", "Rush"] },
+            { id: "G1539", name: "Hasbro: Shadow Shinobi 1-80MN", parts: ["Shadow Shinobi", "1-80", "Metal Needle"] },
+            { id: "G1673", name: "Hasbro: Scarlet Garuda 4-70TP", parts: ["Scarlet Garuda", "4-70", "Trans Point"] },
+            { id: "G1674", name: "Hasbro: Sterling Wolf 3-80FB", parts: ["Sterling Wolf", "3-80", "Free Ball"] },
+            { id: "ND1", name: "Hasbro: Gale Wyvern 3-60T", parts: ["Gale Wyvern", "3-60", "Taper"] },
+            { id: "ND2", name: "Hasbro: Sword Dran 3-80B", parts: ["Sword Dran", "3-80", "Ball"] },
+            { id: "ND3", name: "Hasbro: Cowl Sphinx 9-80GN", parts: ["Cowl Sphinx", "9-80", "Gear Needle"] },
+            { id: "ND4", name: "Hasbro: Beat Tyranno 4-70Q", parts: ["Beat Tyranno", "4-70", "Quake"] },
+            { id: "ND5", name: "Hasbro: Knife Shinobi 4-80HN", parts: ["Knife Shinobi", "4-80", "High Needle"] },
+            { id: "ND6", name: "Hasbro: Steel Samurai 4-80T", parts: ["Steel Samurai", "4-80", "Taper"] },
+            { id: "ND7", name: "Hasbro: Arrow Wizard 4-80GB", parts: ["Arrow Wizard", "4-80", "Gear Ball"] }
+        ];
+
+        // --- STATS LOGIC DATABASE ---
+        const COMPONENT_DATA = {
             blades: {
-                "Sword Dran": { type: "Attack", weight: 35.1, stats: { atk: 85, def: 20, sta: 15, res: 55 }, desc: "Lama classica per KO esplosivi." },
-                "Scythe Incendio": { type: "Balance", weight: 32.8, stats: { atk: 50, def: 55, sta: 65, res: 65 }, desc: "Ottimo bilanciamento e stamina." },
-                "Arrow Wizard": { type: "Stamina", weight: 31.5, stats: { atk: 15, def: 30, sta: 95, res: 50 }, desc: "Sottile, perfetta per spin finish." },
-                "Helm Knight": { type: "Defense", weight: 33.2, stats: { atk: 30, def: 90, sta: 40, res: 80 }, desc: "Forma esagonale per parry." },
-                "Soar Phoenix": { type: "Attack", weight: 38.2, stats: { atk: 95, def: 35, sta: 25, res: 60 }, desc: "Pesante e devastante. Meta-tier." },
-                "Keel Shark": { type: "Attack", weight: 33.9, stats: { atk: 98, def: 10, sta: 10, res: 45 }, desc: "Specialista dell'Uppercut." },
-                "Viper Tail": { type: "Stamina", weight: 33.2, stats: { atk: 45, def: 35, sta: 85, res: 55 }, desc: "Lama per destabilizzare l'avversario." },
-                "Steel Samurai": { type: "Defense", weight: 33.5, stats: { atk: 40, def: 85, sta: 45, res: 75 }, desc: "Ottima per contrattacco difensivo." },
-                "Talon Drake": { type: "Attack", weight: 34.2, stats: { atk: 88, def: 30, sta: 25, res: 60 }, desc: "Lama a raffica per logoramento." },
-                "Dranzer Spiral": { type: "Balance", weight: 30.5, stats: { atk: 65, def: 40, sta: 40, res: 55 }, desc: "Omaggio classico, ottima agilità." },
-                "Chain Incendio": { type: "Balance", weight: 33.6, stats: { atk: 60, def: 60, sta: 55, res: 70 }, desc: "Design a catena per parry dinamici." },
-                "Dran Buster": { type: "Attack", weight: 37.8, stats: { atk: 100, def: 15, sta: 10, res: 50 }, desc: "UX Hasbro: Colpo singolo estremo." },
-                "Wizard Rod": { type: "Stamina", weight: 36.5, stats: { atk: 25, def: 45, sta: 100, res: 65 }, desc: "UX Hasbro: Regina del meta stamina." },
-                "Hells Hammer": { type: "Balance", weight: 35.5, stats: { atk: 75, def: 40, sta: 45, res: 70 }, desc: "UX Hasbro: Sbilancia l'avversario." },
-                "Leon Crest": { type: "Defense", weight: 37.5, stats: { atk: 30, def: 100, sta: 35, res: 85 }, desc: "UX Hasbro: Muraglia insuperabile." },
-                // Crossovers
-                "Optimus Prime": { type: "Attack", weight: 35.0, stats: { atk: 90, def: 25, sta: 20, res: 60 }, desc: "Transformers: Bilanciato verso l'attacco." },
-                "Megatron": { type: "Defense", weight: 33.5, stats: { atk: 40, def: 90, sta: 40, res: 80 }, desc: "Transformers: Difesa brutale." },
-                "Iron Man": { type: "Stamina", weight: 32.5, stats: { atk: 30, def: 35, sta: 92, res: 55 }, desc: "Marvel: Precisione e durata." },
-                "Thanos": { type: "Attack", weight: 34.5, stats: { atk: 96, def: 20, sta: 15, res: 50 }, desc: "Marvel: Forza di impatto pura." }
+                "Dran Sword": { type: "Attack", weight: 35.1 }, "Hells Scythe": { type: "Balance", weight: 32.5 },
+                "Wizard Arrow": { type: "Stamina", weight: 31.8 }, "Knight Shield": { type: "Defense", weight: 33.2 },
+                "Knight Lance": { type: "Defense", weight: 33.5 }, "Shark Edge": { type: "Attack", weight: 33.8 },
+                "Leon Claw": { type: "Balance", weight: 32.1 }, "Viper Tail": { type: "Stamina", weight: 33.5 },
+                "Rhino Horn": { type: "Defense", weight: 31.2 }, "Dran Dagger": { type: "Attack", weight: 34.5 },
+                "Hells Chain": { type: "Balance", weight: 33.2 }, "Phoenix Wing": { type: "Attack", weight: 38.2 },
+                "Wyvern Gale": { type: "Stamina", weight: 33.5 }, "Unicorn Sting": { type: "Balance", weight: 33.2 },
+                "Sphinx Cowl": { type: "Defense", weight: 34.1 }, "Tyranno Beat": { type: "Attack", weight: 36.8 },
+                "Weiss Tiger": { type: "Balance", weight: 34.0 }, "Cobalt Dragoon": { type: "Attack", weight: 37.5 },
+                "Black Shell": { type: "Defense", weight: 34.8 }, "Whale Wave": { type: "Attack", weight: 36.0 },
+                "Bear Scratch": { type: "Attack", weight: 33.5 }, "Crimson Garuda": { type: "Balance", weight: 33.0 },
+                "Shelter Drake": { type: "Stamina", weight: 33.2 }, "Tricera Press": { type: "Defense", weight: 34.5 },
+                "Samurai Calibur": { type: "Attack", weight: 35.2 }, "Cobalt Drake": { type: "Attack", weight: 38.5 },
+                "Goat Tackle": { type: "Defense", weight: 34.2 }, "Mammoth Tusk": { type: "Defense", weight: 35.0 },
+                "Dran Buster": { type: "Attack", weight: 37.8 }, "Hells Hammer": { type: "Balance", weight: 35.5 },
+                "Wizard Rod": { type: "Stamina", weight: 36.5 }, "Shinobi Shadow": { type: "Defense", weight: 33.0 },
+                "Leon Crest": { type: "Defense", weight: 37.5 }, "Phoenix Rudder": { type: "Stamina", weight: 35.8 },
+                "Silver Wolf": { type: "Stamina", weight: 37.0 }, "Samurai Saber": { type: "Attack", weight: 36.2 },
+                "Knight Mail": { type: "Defense", weight: 36.5 }, "Ptera Swing": { type: "Attack", weight: 33.8 },
+                "Impact Drake": { type: "Attack", weight: 37.2 }, "Ghost Circle": { type: "Defense", weight: 35.0 },
+                "Phoenix Feather": { type: "Attack", weight: 32.5 }, "Golem Rock": { type: "Defense", weight: 35.5 },
+                "Scorpio Spear": { type: "Attack", weight: 33.5 }, "Meteor Dragoon": { type: "Attack", weight: 36.5 },
+                "Mummy Curse": { type: "Defense", weight: 35.2 }, "Pegasus Brush": { type: "Attack", weight: 34.5 },
+                "Sol Brave": { type: "Balance", weight: 35.0 }, "Dran Brave": { type: "Attack", weight: 35.0 },
+                "Wizard Arc": { type: "Stamina", weight: 33.5 }, "Hells Reaper": { type: "Attack", weight: 35.5 },
+                "Rhino Reaper": { type: "Defense", weight: 35.2 }, "Hells Arc": { type: "Balance", weight: 35.0 },
+                "Fox Brush": { type: "Attack", weight: 34.5 }, "Pegasus Blast": { type: "Attack", weight: 36.0 },
+                "Cerberus Flame": { type: "Stamina", weight: 34.8 }, "Cerberus Dark": { type: "Attack", weight: 34.5 },
+                "Sol Eclipse": { type: "Balance", weight: 35.0 }, "Wolf Hunt": { type: "Attack", weight: 34.5 },
+                "Emperor Might": { type: "Defense", weight: 36.5 }, "Phoenix Flare": { type: "Stamina", weight: 35.8 },
+                "Sword Dran": { type: "Attack", weight: 35.1 }, "Scythe Incendio": { type: "Balance", weight: 32.8 },
+                "Arrow Wizard": { type: "Stamina", weight: 31.5 }, "Helm Knight": { type: "Defense", weight: 33.2 },
+                "Lance Knight": { type: "Defense", weight: 33.5 }, "Claw Leon": { type: "Balance", weight: 32.1 },
+                "Buster Dran": { type: "Attack", weight: 37.8 }, "Wand Wizard": { type: "Stamina", weight: 36.5 },
+                "Shadow Shinobi": { type: "Defense", weight: 33.0 }, "Scarlet Garuda": { type: "Balance", weight: 33.0 },
+                "Sterling Wolf": { type: "Stamina", weight: 37.0 }, "Gale Wyvern": { type: "Stamina", weight: 33.5 },
+                "Cowl Sphinx": { type: "Defense", weight: 34.1 }, "Beat Tyranno": { type: "Attack", weight: 36.8 },
+                "Knife Shinobi": { type: "Defense", weight: 33.2 }, "Steel Samurai": { type: "Defense", weight: 33.5 }
             },
             ratchets: {
-                "3-60": { weight: 6.5, res: 80 },
-                "4-60": { weight: 6.8, res: 75 },
-                "5-60": { weight: 7.2, res: 90 },
-                "9-60": { weight: 7.5, res: 85 },
-                "3-80": { weight: 7.0, res: 60 },
-                "5-80": { weight: 7.8, res: 70 },
-                "4-80": { weight: 7.3, res: 65 },
-                "1-60": { weight: 6.4, res: 95 },
-                "7-60": { weight: 7.4, res: 85 }
+                "3-60": 6.5, "4-60": 6.8, "5-60": 7.2, "9-60": 7.5, "3-80": 7.0, "5-80": 7.8, "4-80": 7.3, "1-60": 6.4,
+                "2-60": 6.9, "1-80": 7.2, "3-70": 6.8, "7-60": 7.4, "9-70": 7.7, "2-70": 7.1, "3-85": 7.6, "0-80": 7.8,
+                "0-70": 7.5, "7-55": 7.0, "6-60": 7.3, "4-55": 6.7, "4-70": 7.2, "9-70": 7.7, "5-70": 7.4, "M-85": 8.0,
+                "6-70": 7.4, "9-80": 7.9, "7-70": 7.6
             },
             bits: {
-                "Flat": { type: "Attack", spd: 90, sta: 10, dsh: 95 },
-                "Taper": { type: "Balance", spd: 70, sta: 45, dsh: 75 },
-                "Ball": { type: "Stamina", spd: 10, sta: 100, dsh: 15 },
-                "Needle": { type: "Defense", spd: 10, sta: 65, dsh: 20 },
-                "High Needle": { type: "Defense", spd: 10, sta: 60, dsh: 20 },
-                "Point": { type: "Balance", spd: 65, sta: 55, dsh: 70 },
-                "Orb": { type: "Stamina", spd: 15, sta: 95, dsh: 20 },
-                "Low Flat": { type: "Attack", spd: 95, sta: 5, dsh: 100 },
-                "Gear Flat": { type: "Attack", spd: 110, sta: 0, dsh: 110 },
-                "Accel": { type: "Attack", spd: 100, sta: 5, dsh: 100 },
-                "Hexa": { type: "Defense", spd: 30, sta: 40, dsh: 45 },
-                "Disc Ball": { type: "Stamina", spd: 20, sta: 92, dsh: 30 }
+                "Flat": "Attack", "Taper": "Balance", "Ball": "Stamina", "Needle": "Defense", "High Needle": "Defense",
+                "Low Flat": "Attack", "Point": "Balance", "Orb": "Stamina", "Spike": "Defense", "Rush": "Attack",
+                "High Taper": "Balance", "Gear Flat": "Attack", "Gear Ball": "Stamina", "Gear Point": "Balance",
+                "Gear Needle": "Defense", "Quake": "Attack", "Unite": "Balance", "Cyclone": "Stamina", "Dot": "Defense",
+                "Hexa": "Defense", "Rush": "Attack", "Elevate": "Stamina", "Trans Point": "Balance", "Bound Spike": "Defense",
+                "M": "Attack", "Accel": "Attack", "Disc Ball": "Stamina", "Metal Needle": "Defense", "Glide": "Stamina",
+                "Free Ball": "Stamina", "Level": "Attack", "Rubber Accel": "Attack", "Under Needle": "Defense", "Zap": "Attack",
+                "J": "Attack", "Wedge": "Stamina", "Vortex": "Attack", "Low Orb": "Stamina", "Kick": "Balance",
+                "Gear Rush": "Attack", "TK": "Balance", "Wall Wedge": "Stamina"
             }
         };
 
-        const PRODUCTS = [
-            { name: "Starter Pack: Sword Dran 3-60F", parts: ["Sword Dran", "3-60", "Flat"] },
-            { name: "Starter Pack: Scythe Incendio 4-60T", parts: ["Scythe Incendio", "4-60", "Taper"] },
-            { name: "Starter Pack: Arrow Wizard 4-80B", parts: ["Arrow Wizard", "4-80", "Ball"] },
-            { name: "Starter Pack: Helm Knight 3-80N", parts: ["Helm Knight", "3-80", "Needle"] },
-            { name: "Starter Pack: Soar Phoenix 9-60GF", parts: ["Soar Phoenix", "9-60", "Gear Flat"] },
-            { name: "Booster Pack: Keel Shark 3-60LF", parts: ["Keel Shark", "3-60", "Low Flat"] },
-            { name: "Booster Pack: Viper Tail 5-80O", parts: ["Viper Tail", "5-80", "Orb"] },
-            { name: "Booster Pack: Dranzer Spiral 3-80T", parts: ["Dranzer Spiral", "3-80", "Taper"] },
-            { name: "Booster Pack: Steel Samurai 4-80N", parts: ["Steel Samurai", "4-80", "Needle"] },
-            { name: "Booster Pack: Talon Drake 4-60F", parts: ["Talon Drake", "4-60", "Flat"] },
-            { name: "UX Starter: Dran Buster 1-60A", parts: ["Dran Buster", "1-60", "Accel"] },
-            { name: "UX Starter: Wizard Rod 5-70DB", parts: ["Wizard Rod", "5-60", "Disc Ball"] },
-            { name: "UX Starter: Hells Hammer 3-70H", parts: ["Hells Hammer", "3-60", "Hexa"] },
-            { name: "Dual Pack: Dranzer Spiral & Talon Drake", parts: ["Dranzer Spiral", "3-80", "Taper", "Talon Drake", "4-60", "Flat"] },
-            { name: "Crossover: Optimus Prime 3-60F", parts: ["Optimus Prime", "3-60", "Flat"] },
-            { name: "Crossover: Megatron 4-80N", parts: ["Megatron", "4-80", "Needle"] },
-            { name: "Crossover: Iron Man 4-80B", parts: ["Iron Man", "4-80", "Ball"] },
-            { name: "Crossover: Thanos 4-60LF", parts: ["Thanos", "4-60", "Low Flat"] }
-        ];
-
-        // --- LOGICA APP ---
         const state = {
             inventory: { blades: {}, ratchets: {}, bits: {} },
-            currentBuild: null,
             deck: [null, null, null],
             chart: null
         };
 
         function init() {
-            initChart();
             populateSelector();
-            load();
+            initChart();
+            loadState();
             renderInv();
             updateDropdowns();
             renderDeck();
         }
 
         function populateSelector() {
-            const s = document.getElementById('hasbroProductSelector');
-            PRODUCTS.forEach((p, i) => {
+            const s = document.getElementById('masterProductSelector');
+            MASTER_LIST.forEach((p, i) => {
                 const o = document.createElement('option');
                 o.value = i;
-                o.textContent = p.name;
+                o.textContent = `[${p.id}] ${p.name}`;
                 s.appendChild(o);
             });
         }
 
         document.getElementById('addBtn').addEventListener('click', () => {
-            const idx = document.getElementById('hasbroProductSelector').value;
-            if (idx === "") return;
-            const p = PRODUCTS[idx];
+            const idx = document.getElementById('masterProductSelector').value;
+            if(idx === "") return;
+            const product = MASTER_LIST[idx];
+            const [b, r, bit] = product.parts;
+
+            const add = (cat, n) => state.inventory[cat][n] = (state.inventory[cat][n] || 0) + 1;
+            add('blades', b); add('ratchets', r); add('bits', bit);
             
-            const add = (cat, name) => state.inventory[cat][name] = (state.inventory[cat][name] || 0) + 1;
-            
-            for(let i=0; i<p.parts.length; i+=3) {
-                add('blades', p.parts[i]);
-                add('ratchets', p.parts[i+1]);
-                add('bits', p.parts[i+2]);
-            }
-            save(); renderInv(); updateDropdowns();
+            saveState(); renderInv(); updateDropdowns();
         });
 
         function removeItem(cat, name) {
@@ -296,13 +416,12 @@
                 state.inventory[cat][name]--;
                 if(state.inventory[cat][name] === 0) delete state.inventory[cat][name];
             }
-            save(); renderInv(); updateDropdowns();
+            saveState(); renderInv(); updateDropdowns();
         }
 
         function renderInv() {
             const draw = (cat, elId) => {
-                const c = document.getElementById(elId);
-                c.innerHTML = '';
+                const c = document.getElementById(elId); c.innerHTML = '';
                 const items = Object.entries(state.inventory[cat]);
                 if(!items.length) {
                     c.innerHTML = `<div class="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 text-xs italic">Nessun componente</div>`;
@@ -310,10 +429,10 @@
                 }
                 items.forEach(([n, count]) => {
                     const d = document.createElement('div');
-                    d.className = "inventory-card relative bg-white border border-slate-200 p-3 rounded-xl flex justify-between items-center shadow-sm";
+                    d.className = "inventory-item relative bg-white border border-slate-200 p-3 rounded-xl flex justify-between items-center shadow-sm";
                     d.innerHTML = `
                         <div class="flex flex-col">
-                            <span class="text-[8px] font-black uppercase text-blue-500">${PARTS_DB[cat][n]?.type || 'Part'}</span>
+                            <span class="text-[8px] font-black uppercase text-blue-500">Part</span>
                             <span class="text-xs font-bold text-slate-800">${n}</span>
                         </div>
                         <div class="flex items-center gap-3">
@@ -329,8 +448,7 @@
 
         function updateDropdowns() {
             const sync = (id, cat) => {
-                const s = document.getElementById(id);
-                const prev = s.value;
+                const s = document.getElementById(id); const prev = s.value;
                 s.innerHTML = `<option value="">Scegli...</option>`;
                 Object.keys(state.inventory[cat]).forEach(n => {
                     const o = document.createElement('option'); o.value = n; o.textContent = n; s.appendChild(o);
@@ -340,18 +458,16 @@
             sync('select-blade', 'blades'); sync('select-ratchet', 'ratchets'); sync('select-bit', 'bits');
         }
 
-        // --- ANALISI ---
+        // --- ANALYSIS ---
         function initChart() {
             const ctx = document.getElementById('radarChart').getContext('2d');
             state.chart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['ATTACCO', 'DIFESA', 'STAMINA', 'PESO', 'DASH'],
+                    labels: ['ATTACCO', 'DIFESA', 'STAMINA', 'PESO', 'REAZIONI'],
                     datasets: [{
-                        data: [0,0,0,0,0],
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 2, pointRadius: 0
+                        data: [0,0,0,0,0], backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, pointRadius: 0
                     }]
                 },
                 options: {
@@ -366,23 +482,29 @@
             const b = document.getElementById('select-blade').value;
             const r = document.getElementById('select-ratchet').value;
             const bit = document.getElementById('select-bit').value;
-            if(!b || !r || !bit) return alert("Scegli i componenti!");
+            if(!b || !r || !bit) return;
 
-            const bD = PARTS_DB.blades[b], rD = PARTS_DB.ratchets[r], bitD = PARTS_DB.bits[bit];
-            const wT = bD.weight + rD.weight + 2.0;
-            const atk = (bD.stats.atk * 0.7) + (bitD.spd * 0.3);
-            const def = (bD.stats.def * 0.7) + (rD.weight * 2);
-            const sta = (bD.stats.sta * 0.7) + (bitD.sta * 0.3);
-            const wei = (wT / 48) * 100;
-            const dsh = (bitD.dsh * 0.8) + (atk * 0.2);
+            const bladeData = COMPONENT_DATA.blades[b] || { type: "Balance", weight: 33.0 };
+            const rWeight = COMPONENT_DATA.ratchets[r] || 7.0;
+            const bitType = COMPONENT_DATA.bits[bit] || "Balance";
 
-            const stats = [atk, def, sta, wei, dsh];
+            const totalWeight = bladeData.weight + rWeight + 2.0;
+            
+            // Simplified stat logic
+            let atk = 50, def = 50, sta = 50, res = 50;
+            if(bladeData.type === "Attack") { atk += 30; res += 10; }
+            if(bladeData.type === "Stamina") { sta += 40; }
+            if(bladeData.type === "Defense") { def += 40; res += 20; }
+            if(bitType === "Attack") { atk += 10; res += 10; }
+            if(bitType === "Stamina") { sta += 20; }
+            
+            const stats = [atk, def, sta, (totalWeight/48)*100, res];
             state.chart.data.datasets[0].data = stats;
             state.chart.update();
             document.getElementById('chart-msg').style.opacity = 0;
 
-            document.getElementById('val-weight').textContent = wT.toFixed(1) + " g";
-            document.getElementById('val-burst').textContent = Math.round((bD.stats.res * 0.4) + (rD.res * 0.6));
+            document.getElementById('val-weight').textContent = totalWeight.toFixed(1) + " g";
+            document.getElementById('val-res').textContent = Math.round(res);
 
             const avg = stats.reduce((a,c) => a+c, 0)/5;
             let g = 'C'; if(avg > 78) g = 'S'; else if(avg > 65) g = 'A'; else if(avg > 50) g = 'B';
@@ -390,11 +512,7 @@
             badge.className = `w-16 h-16 rounded-2xl flex flex-col items-center justify-center border-2 transition-all grade-${g.toLowerCase()}`;
             badge.querySelector('span:last-child').textContent = g;
 
-            let fb = `Build <strong>${bD.type}</strong> basata su <strong>${b}</strong>. `;
-            if(bD.type === bitD.type) fb += `Sinergia perfetta! Il Bit esalta il ruolo della Blade. `;
-            else fb += `Configurazione ibrida creativa. `;
-            if(wT > 44) fb += `<br><br><span class="text-green-600 font-bold uppercase text-[9px]">Vantaggio Peso:</span> Molto difficile da spostare.`;
-            document.getElementById('feedback-text').innerHTML = fb;
+            document.getElementById('feedback-text').innerHTML = `Build <strong>${bladeData.type}</strong> basata su <strong>${b}</strong>. Sinergia <strong>${bitType === bladeData.type ? 'Perfetta' : 'Interessante'}</strong>.`;
             document.getElementById('saveDeckBtn').disabled = false;
             state.currentBuild = { b, r, bit, g };
         });
@@ -411,7 +529,7 @@
             const g = document.getElementById('deck-grid'); g.innerHTML = '';
             state.deck.forEach((b, i) => {
                 const d = document.createElement('div');
-                d.className = `h-48 rounded-3xl border-2 p-6 flex flex-col justify-center items-center text-center ` + 
+                d.className = `h-48 rounded-[2rem] border-2 p-6 flex flex-col justify-center items-center text-center ` + 
                     (b ? "bg-white border-slate-200 shadow-md" : "border-dashed border-slate-200 bg-slate-50");
                 if(b) {
                     d.innerHTML = `
@@ -423,16 +541,15 @@
                         </div>
                     `;
                 } else {
-                    d.innerHTML = `<span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Slot Libero</span>`;
+                    d.innerHTML = `<span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Libero</span>`;
                 }
                 g.appendChild(d);
             });
         }
 
         function removeDeck(i) { state.deck[i] = null; renderDeck(); }
-
-        function save() { localStorage.setItem('beylab_hasbro', JSON.stringify(state.inventory)); }
-        function load() { const s = localStorage.getItem('beylab_hasbro'); if(s) state.inventory = JSON.parse(s); }
+        function saveState() { localStorage.setItem('beylab_master_v4', JSON.stringify(state.inventory)); }
+        function loadState() { const s = localStorage.getItem('beylab_master_v4'); if(s) state.inventory = JSON.parse(s); }
 
         window.onload = init;
     </script>
